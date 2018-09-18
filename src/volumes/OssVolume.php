@@ -65,6 +65,11 @@ class OssVolume extends Volume
     public $clientDownloadExpires = 60;
 
     /**
+     * @var bool
+     */
+    public $serverHttpsDownload = false;
+
+    /**
      * @var OssClient|null
      */
     private $_client;
@@ -247,13 +252,21 @@ class OssVolume extends Volume
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
+        $uriPath = $this->resolvePath($uriPath);
         if ($this->hasUrls) {
             if ($this->isPublic) {
-                $url = $this->getRootUrl() . $uriPath;
+                $rootUrl = $this->getRootUrl();
+                if (strncmp($rootUrl, 'http://', 7) !== 0 || strncmp($rootUrl, 'https://', 8) !== 0) {
+                    $url = ($this->serverHttpsDownload ? 'https://' : 'http://') . $rootUrl . rawurlencode($uriPath);
+                } else {
+                    $url = $rootUrl .  rawurlencode($uriPath);
+                }
             } else {
                 $url = $this->grantClientPrivateDownload($uriPath);
             }
-            copy($url, $targetPath);
+            if (!copy($url, $targetPath)) {
+                throw new VolumeException("Save asset {$url} to {$targetPath} failed");
+            }
         } else {
             $data = $this->getClient()->getObject($this->bucket, $this->resolvePath($uriPath));
             file_put_contents($targetPath, $data);
