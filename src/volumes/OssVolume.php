@@ -64,6 +64,9 @@ class OssVolume extends Volume
      */
     public $clientDownloadExpires = 60;
 
+    /**
+     * @var OssClient|null
+     */
     private $_client;
 
     // Static
@@ -90,7 +93,7 @@ class OssVolume extends Volume
     /**
      * @param string $path
      * @return string
-     * @throws OssException
+     * @throws VolumeException
      */
     public function grantClientPrivateDownload(string $path): string
     {
@@ -98,7 +101,11 @@ class OssVolume extends Volume
             return $this->url . '/' . $this->resolvePath($path);
         }
 
-        return $this->getClient()->signUrl($this->bucket, $path, $this->clientDownloadExpires);
+        try {
+            return $this->getClient()->signUrl($this->bucket, $this->resolvePath($path), $this->clientDownloadExpires);
+        } catch (OssException $exception) {
+            throw new VolumeException($exception->getMessage());
+        }
     }
 
     // Public Methods
@@ -108,16 +115,20 @@ class OssVolume extends Volume
      * @param string $directory
      * @param bool $recursive
      * @return array
-     * @throws OssException
+     * @throws VolumeException
      */
     public function getFileList(string $directory, bool $recursive): array
     {
         $results = [];
 
-        $listInfo = $this->getClient()->listObjects($this->bucket, [
-            'prefix' => $this->resolvePath($directory),
-            'delimiter' => $this->delimiter
-        ]);
+        try {
+            $listInfo = $this->getClient()->listObjects($this->bucket, [
+                'prefix' => $this->resolvePath($directory),
+                'delimiter' => $this->delimiter
+            ]);
+        } catch (OssException $exception) {
+            throw new VolumeException($exception->getMessage());
+        }
 
         foreach ($listInfo->getObjectList() as $object) {
                 $results[$object->getKey()] = [
@@ -136,6 +147,7 @@ class OssVolume extends Volume
     /**
      * @param string $uri
      * @return array
+     * @throws VolumeException
      */
     public function getFileMetadata(string $uri): array
     {
@@ -147,6 +159,7 @@ class OssVolume extends Volume
      * @param resource $stream
      * @param array $config
      * @return array
+     * @throws VolumeException
      */
     public function createFileByStream(string $path, $stream, array $config): array
     {
@@ -158,6 +171,7 @@ class OssVolume extends Volume
      * @param resource $stream
      * @param array $config
      * @return array
+     * @throws VolumeException
      */
     public function updateFileByStream(string $path, $stream, array $config): array
     {
@@ -167,6 +181,7 @@ class OssVolume extends Volume
     /**
      * @param string $path
      * @return bool
+     * @throws VolumeException
      */
     public function fileExists(string $path): bool
     {
@@ -177,6 +192,7 @@ class OssVolume extends Volume
 
     /**
      * @param string $path
+     * @throws VolumeException
      */
     public function deleteFile(string $path)
     {
@@ -186,48 +202,61 @@ class OssVolume extends Volume
     /**
      * @param string $path
      * @param string $newPath
-     * @throws OssException
+     * @throws VolumeException
      */
     public function renameFile(string $path, string $newPath)
     {
-        $this->getClient()->copyObject(
-            $this->bucket,
-            $this->resolvePath($path),
-            $this->bucket,
-            $this->resolvePath($newPath)
-        );
+        try {
+            $this->getClient()->copyObject(
+                $this->bucket,
+                $this->resolvePath($path),
+                $this->bucket,
+                $this->resolvePath($newPath)
+            );
 
-        $this->getClient()->deleteObject($this->bucket, $this->resolvePath($path));
+            $this->getClient()->deleteObject($this->bucket, $this->resolvePath($path));
+        } catch (OssException $exception) {
+            throw new VolumeException($exception->getMessage());
+        }
     }
 
     /**
      * @param string $path
      * @param string $newPath
-     * @throws OssException
+     * @throws VolumeException
      */
     public function copyFile(string $path, string $newPath)
     {
-        $this->getClient()->copyObject(
-            $this->bucket,
-            $this->resolvePath($path),
-            $this->bucket,
-            $this->resolvePath($newPath)
-        );
+        try {
+            $this->getClient()->copyObject(
+                $this->bucket,
+                $this->resolvePath($path),
+                $this->bucket,
+                $this->resolvePath($newPath)
+            );
+        } catch (OssException $exception) {
+            throw new VolumeException($exception->getErrorMessage());
+        }
     }
 
     /**
      * @param string $uriPath
      * @param string $targetPath
      * @return int
-     * @throws OssException
+     * @throws VolumeException
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $url = $this->getRootUrl() . $uriPath;
-        if (!$this->isPublic) {
-            $url = $this->grantClientPrivateDownload($url);
+        if ($this->hasUrls) {
+            $url = $this->getRootUrl() . $uriPath;
+            if (!$this->isPublic) {
+                $url = $this->grantClientPrivateDownload($url);
+            }
+            copy($url, $targetPath);
+        } else {
+            $data = $this->getClient()->getObject($this->bucket, $this->resolvePath($uriPath));
+            file_put_contents($targetPath, $data);
         }
-        copy($url, $targetPath);
 
         return filesize($targetPath);
     }
@@ -264,7 +293,7 @@ class OssVolume extends Volume
      */
     public function renameDir(string $path, string $newName)
     {
-        throw new VolumeException('No support remame folder');
+        throw new VolumeException('No support rename folder');
     }
 
     /**
@@ -281,6 +310,7 @@ class OssVolume extends Volume
 
     /**
      * @return OssClient|null
+     * @throws VolumeException
      */
     public function getClient()
     {
@@ -291,7 +321,9 @@ class OssVolume extends Volume
         try {
             $this->_client = new OssClient($this->accessKey, $this->secretKey, $this->endpoint);
         } catch (OssException $exception) {
-            Craft::error("Aliyun Oss client not created. {$exception->getMessage()}");
+            Craft::error("Aliyun Oss client not created: {$exception->getMessage()}");
+
+            throw new VolumeException($exception->getMessage());
         }
 
         return $this->_client;
