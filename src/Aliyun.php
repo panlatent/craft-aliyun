@@ -13,7 +13,7 @@ use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\i18n\PhpMessageSource;
 use craft\services\Volumes;
-use panlatent\craft\qiniu\volumes\OssVolume;
+use panlatent\craft\aliyun\volumes\OssVolume;
 use yii\base\Event;
 
 /**

@@ -6,7 +6,7 @@
  * @copyright Copyright (c) 2018 panlatent@gmail.com
  */
 
-namespace panlatent\craft\qiniu\volumes;
+namespace panlatent\craft\aliyun\volumes;
 
 use Craft;
 use craft\base\Volume;
