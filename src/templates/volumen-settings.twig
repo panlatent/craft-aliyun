@@ -1,0 +1,60 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: "Access Key"|t('qiniu'),
+    instructions: "Please enter a access key for your Qiniu account"|t('qiniu'),
+    id: 'accessKey',
+    class: 'ltr',
+    name: 'accessKey',
+    value: volume.accessKey,
+    errors: volume.getErrors('accessKey'),
+    required: true,
+    placeholder: "Access Key"|t('qiniu')
+}) }}
+
+{{ forms.passwordField({
+    label: "Secret Key"|t('qiniu'),
+    instructions: "Please enter a secret key for your Qiniu account"|t('qiniu'),
+    id: 'secretKey',
+    class: 'ltr',
+    name: 'secretKey',
+    value: volume.secretKey,
+    errors: volume.getErrors('secretKey'),
+    required: true,
+    placeholder: "Secret Key"|t('qiniu')
+}) }}
+
+{{ forms.textField({
+    label: "Bucket"|t('qiniu'),
+    instructions: "Storage space name"|t('qiniu'),
+    id: 'bucket',
+    class: 'ltr',
+    name: 'bucket',
+    value: volume.bucket,
+    errors: volume.getErrors('bucket'),
+    required: true,
+    placeholder: "Bucket ID"|t('qiniu')
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Access Control"|t('qiniu'),
+    instructions: "This bucket is public space?"|t('qiniu'),
+    id: 'isPublic',
+    class: 'ltr',
+    name: 'isPublic',
+    value: 1,
+    on: volume.isPublic,
+    errors: volume.getErrors('isPublic'),
+    required: true
+}) }}
+
+{{ forms.textField({
+    label: "Root Path"|t('qiniu'),
+    instructions: "The volume file will be saved to the subdirectory of this Bucket"|t('qiniu'),
+    id: 'root',
+    class: 'ltr',
+    name: 'root',
+    value: volume.root,
+    errors: volume.getErrors('root'),
+    placeholder: "path/to/folder"|t('qiniu')
+}) }}
