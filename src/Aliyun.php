@@ -87,7 +87,7 @@ class Aliyun extends Plugin
 
         Craft::info(
             Craft::t(
-                'Aliyun',
+                'aliyun',
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),
