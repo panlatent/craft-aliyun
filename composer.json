@@ -37,7 +37,6 @@
         "hasCpSettings": false,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/panlatent/craft-aliyun/master/CHANGELOG.md",
-        "class": "panlatent\\craft\\aliyun\\Aliyun",
-        "basePath": "src/"
+        "class": "panlatent\\craft\\aliyun\\Aliyun"
     }
 }
