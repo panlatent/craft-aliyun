@@ -74,7 +74,7 @@ class OssVolume extends Volume
      */
     public static function displayName(): string
     {
-        return Craft::t('aliyun', 'OSS Volume');
+        return Craft::t('aliyun', 'Aliyun OSS Volume');
     }
 
     /**

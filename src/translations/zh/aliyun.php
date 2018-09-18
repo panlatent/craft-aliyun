@@ -20,7 +20,7 @@
  */
 return [
     'Aliyun plugin loaded' => '阿里云插件已加载完毕',
-    'OSS Volume' => 'OSS 存储卷',
+    'Aliyun OSS Volume' => '阿里云对象存储卷',
     'Access Key' => 'Access Key',
     'Secret Key' => 'Secret Key',
     'Bucket' => '存储空间',
