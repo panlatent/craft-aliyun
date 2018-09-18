@@ -1,0 +1,42 @@
+{
+    "name": "panlatent/craft-aliyun",
+    "description": "Aliyun plugin for Craft 3",
+    "type": "craft-plugin",
+    "version": "0.1.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "aliyun",
+        "oss"
+    ],
+    "support": {
+        "docs": "https://github.com/panlatent/craft-aliyun/blob/master/README.md",
+        "issues": "https://github.com/panlatent/craft-aliyun/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "panlatent@gmail.com",
+            "homepage": "https://panlatent.com/"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0",
+        "aliyuncs/oss-sdk-php": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+          "panlatent\\craft\\aliyun\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Aliyun",
+        "handle": "aliyun",
+        "hasCpSettings": false,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/panlatent/craft-aliyun/master/CHANGELOG.md",
+        "class": "panlatent\\craft\\aliyun\\Aliyun"
+    }
+}
