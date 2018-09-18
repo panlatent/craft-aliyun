@@ -248,9 +248,10 @@ class OssVolume extends Volume
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
         if ($this->hasUrls) {
-            $url = $this->getRootUrl() . $uriPath;
-            if (!$this->isPublic) {
-                $url = $this->grantClientPrivateDownload($url);
+            if ($this->isPublic) {
+                $url = $this->getRootUrl() . $uriPath;
+            } else {
+                $url = $this->grantClientPrivateDownload($uriPath);
             }
             copy($url, $targetPath);
         } else {
