@@ -10,7 +10,6 @@ namespace panlatent\craft\aliyun;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use craft\i18n\PhpMessageSource;
 use craft\services\Volumes;
 use panlatent\craft\aliyun\volumes\OssVolume;
 use yii\base\Event;
@@ -46,6 +45,11 @@ class Plugin extends \craft\base\Plugin
      */
     public $schemaVersion = '0.1.0';
 
+    /**
+     * @var string
+     */
+    public $t9nCategory = 'aliyun';
+
     // Public Methods
     // =========================================================================
 
@@ -66,11 +70,6 @@ class Plugin extends \craft\base\Plugin
         self::$plugin = $this;
 
         Craft::setAlias('@aliyun', $this->getBasePath());
-
-        Craft::$app->i18n->translations['aliyun'] = [
-            'class' => PhpMessageSource::class,
-            'basePath' => '@aliyun/translations',
-        ];
 
         // Register volume types
         Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $e) {
