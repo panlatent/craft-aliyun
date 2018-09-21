@@ -9,7 +9,6 @@
 namespace panlatent\craft\aliyun;
 
 use Craft;
-use craft\base\Plugin;
 use craft\events\RegisterComponentTypesEvent;
 use craft\i18n\PhpMessageSource;
 use craft\services\Volumes;
@@ -17,21 +16,14 @@ use panlatent\craft\aliyun\volumes\OssVolume;
 use yii\base\Event;
 
 /**
- * Craft plugins are very much like little applications in and of themselves. We’ve made
- * it as simple as we can, but the training wheels are off. A little prior knowledge is
- * going to be required to write a plugin.
+ * Plugin class.
  *
- * For the purposes of the plugin docs, we’re going to assume that you know PHP and SQL,
- * as well as some semi-advanced concepts like object-oriented programming and PHP namespaces.
- *
- * https://craftcms.com/docs/plugins/introduction
- *
- * @author    panlatent@gmail.com
+ * @author    Panlatent <panlatent@gmail.com>
  * @package   Aliyun
  * @since     0.1.0
  *
  */
-class Aliyun extends Plugin
+class Plugin extends \craft\base\Plugin
 {
     // Static Properties
     // =========================================================================
@@ -40,7 +32,7 @@ class Aliyun extends Plugin
      * Static property that is an instance of this plugin class so that it can be accessed via
      * Aliyun::$plugin
      *
-     * @var Aliyun
+     * @var Plugin
      */
     public static $plugin;
 
