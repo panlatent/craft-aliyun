@@ -1,5 +1,5 @@
-Craft Aliyun
-============
+Aliyun plugin for Craft 3
+==========================
 [![Build Status](https://travis-ci.org/panlatent/craft-aliyun.svg)](https://travis-ci.org/panlatent/craft-aliyun)
 [![Coverage Status](https://coveralls.io/repos/github/panlatent/craft-aliyun/badge.svg?branch=master)](https://coveralls.io/github/panlatent/craft-aliyun?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/panlatent/craft-aliyun/v/stable.svg)](https://packagist.org/packages/panlatent/craft-aliyun)
@@ -12,7 +12,6 @@ Craft Aliyun
 ![Screenshot](resources/img/aliyun.png)
 
 Aliyun plugin for Craft CMS 3. The plugin provide a `Aliyun OSS Volume` can save files in the [Aliyun OSS](https://www.aliyun.com/product/oss).
-
 
 Features
 ---------
