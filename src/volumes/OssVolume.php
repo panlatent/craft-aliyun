@@ -252,17 +252,14 @@ class OssVolume extends Volume
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $uriPath = $this->resolvePath($uriPath);
         if ($this->hasUrls) {
             if ($this->isPublic) {
-                $rootUrl = $this->getRootUrl();
-                if (strncmp($rootUrl, 'http://', 7) !== 0 || strncmp($rootUrl, 'https://', 8) !== 0) {
-                    $url = ($this->serverHttpsDownload ? 'https://' : 'http://') . $rootUrl . rawurlencode($uriPath);
-                } else {
-                    $url = $rootUrl .  rawurlencode($uriPath);
-                }
+                $rootUrl = $this->_completeSchema($this->getRootUrl());
+                $url = $rootUrl . $this->_encodeUriPath($uriPath);
+                \Craft::info($uriPath, __METHOD__);
+                \Craft::info($url, __METHOD__);
             } else {
-                $url = $this->grantClientPrivateDownload($uriPath);
+                $url = $this->grantClientPrivateDownload($this->resolvePath($uriPath));
             }
             if (!copy($url, $targetPath)) {
                 throw new VolumeException("Save asset {$url} to {$targetPath} failed");
@@ -355,5 +352,33 @@ class OssVolume extends Volume
         }
 
         return $this->root . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    private function _completeSchema(string $url): string
+    {
+        if (strncmp($url, 'http://', 7) === 0 || strncmp($url, 'https://', 8) === 0) {
+            return $url;
+        }
+
+        $schema = $this->serverHttpsDownload ? 'https://' : 'http://';
+
+        return  $schema . ltrim($url, '/');
+    }
+
+    /**
+     * @param string $uriPath
+     * @return string
+     */
+    private function _encodeUriPath(string $uriPath): string
+    {
+        $uri = array_map(function($value) {
+            return rawurlencode($value);
+        }, (array)explode('/', $uriPath));
+
+        return implode('/', $uri);
     }
 }
