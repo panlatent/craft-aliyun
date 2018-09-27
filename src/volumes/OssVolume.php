@@ -256,8 +256,6 @@ class OssVolume extends Volume
             if ($this->isPublic) {
                 $rootUrl = $this->_completeSchema($this->getRootUrl());
                 $url = $rootUrl . $this->_encodeUriPath($uriPath);
-                \Craft::info($uriPath, __METHOD__);
-                \Craft::info($url, __METHOD__);
             } else {
                 $url = $this->grantClientPrivateDownload($this->resolvePath($uriPath));
             }
