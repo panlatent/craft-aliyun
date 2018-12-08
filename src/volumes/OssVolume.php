@@ -1,8 +1,6 @@
 <?php
 /**
- * Aliyun plugin for Craft 3
- *
- * @link      https://panlatent.com/
+ * @link https://github.com/panlatent/craft-aliyun
  * @copyright Copyright (c) 2018 panlatent@gmail.com
  */
 
@@ -13,6 +11,7 @@ use craft\base\Volume;
 use craft\errors\VolumeException;
 use OSS\Core\OssException;
 use OSS\OssClient;
+use panlatent\craft\aliyun\Plugin;
 use yii\helpers\StringHelper;
 
 /**
@@ -24,6 +23,11 @@ use yii\helpers\StringHelper;
  */
 class OssVolume extends Volume
 {
+    /**
+     * @var bool|null
+     */
+    public $useGlobalSettings;
+
     /**
      * @var string
      */
@@ -86,6 +90,14 @@ class OssVolume extends Volume
     }
 
     /**
+     * @return array
+     */
+    public static function endpoints(): array
+    {
+        return require_once dirname(__DIR__) . '/config/endpoints.php';
+    }
+
+    /**
      * Init.
      */
     public function init()
@@ -93,6 +105,14 @@ class OssVolume extends Volume
         parent::init();
 
         $this->root = trim($this->root, '/');
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllBuckets(): array
+    {
+       return $this->getClient()->listBuckets()->getBucketList();
     }
 
     /**
@@ -310,9 +330,7 @@ class OssVolume extends Volume
      */
     public function getSettingsHtml()
     {
-        $templateString = file_get_contents(__DIR__ . '/../templates/volumen-settings.twig');
-
-        return Craft::$app->getView()->renderString($templateString, [
+        return Craft::$app->getView()->renderTemplate('aliyun/_components/volumes/OssVolume', [
             'volume' => $this,
         ]);
     }
@@ -328,7 +346,16 @@ class OssVolume extends Volume
         }
 
         try {
-            $this->_client = new OssClient($this->accessKey, $this->secretKey, $this->endpoint);
+            if ($this->useGlobalSettings) {
+                $settings = Plugin::$plugin->getSettings();
+                $accessKey = $settings->getAccessKey();
+                $secretKey = $settings->getSecretKey();
+            } else {
+                $accessKey = $this->accessKey;
+                $secretKey = $this->secretKey;
+            }
+
+            $this->_client = new OssClient($accessKey, $secretKey, $this->endpoint);
         } catch (OssException $exception) {
             Craft::error("Aliyun Oss client not created: {$exception->getMessage()}");
 

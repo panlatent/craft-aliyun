@@ -1,16 +1,17 @@
 <?php
 /**
- * Aliyun plugin for Craft 3
- *
- * @link      https://panlatent.com/
+ * @link https://github.com/panlatent/craft-aliyun
  * @copyright Copyright (c) 2018 panlatent@gmail.com
  */
 
 namespace panlatent\craft\aliyun;
 
 use Craft;
+use craft\events\PluginEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\services\Plugins;
 use craft\services\Volumes;
+use panlatent\craft\aliyun\models\Settings;
 use panlatent\craft\aliyun\volumes\OssVolume;
 use yii\base\Event;
 
@@ -19,8 +20,9 @@ use yii\base\Event;
  *
  * @author    Panlatent <panlatent@gmail.com>
  * @package   Aliyun
+ * @method Settings getSettings()
+ * @property-read Settings $setting
  * @since     0.1.0
- *
  */
 class Plugin extends \craft\base\Plugin
 {
@@ -43,7 +45,7 @@ class Plugin extends \craft\base\Plugin
      *
      * @var string
      */
-    public $schemaVersion = '0.1.1';
+    public $schemaVersion = '0.1.2-alpha.1';
 
     /**
      * @var string
@@ -76,6 +78,17 @@ class Plugin extends \craft\base\Plugin
             $e->types[] = OssVolume::class;
         });
 
+        Event::on(Plugins::class, Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, function (PluginEvent $event) {
+            if ($event->plugin === $this) {
+                $settings = $this->getSettings();
+                if ($settings->useDotEnv) {
+                    $config = Craft::$app->getConfig();
+                    $config->setDotEnvVar('ALIYUN_ACCESS_KEY', $settings->getAccessKey());
+                    $config->setDotEnvVar('ALIYUN_SECRET_KEY', $settings->getSecretKey());
+                }
+            }
+        });
+
         Craft::info(
             Craft::t(
                 'aliyun',
@@ -89,4 +102,21 @@ class Plugin extends \craft\base\Plugin
     // Protected Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    protected function createSettingsModel()
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('aliyun/_settings', [
+            'settings' => $this->getSettings(),
+        ]);
+    }
 }

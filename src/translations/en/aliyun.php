@@ -1,8 +1,6 @@
 <?php
 /**
- * Aliyun plugin for Craft 3
- *
- * @link      https://panlatent.com/
+ * @link https://github.com/panlatent/craft-aliyun
  * @copyright Copyright (c) 2018 panlatent@gmail.com
  */
 
