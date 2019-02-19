@@ -106,7 +106,7 @@ class OssVolume extends Volume
     {
         parent::init();
 
-        $this->root = trim($this->root, '/');
+        $this->root = trim($this->root, '\\/');
     }
 
     /**
@@ -125,11 +125,11 @@ class OssVolume extends Volume
     public function grantClientPrivateDownload(string $path): string
     {
         if ($this->isPublic) {
-            return $this->url . '/' . $this->resolveLocalPath($path);
+            return $this->url . '/' . $this->getRemoteObjectPath($path);
         }
 
         try {
-            return $this->getClient()->signUrl($this->bucket, $this->resolveLocalPath($path), $this->clientDownloadExpires);
+            return $this->getClient()->signUrl($this->bucket, $this->getRemoteObjectPath($path), $this->clientDownloadExpires);
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }
@@ -146,22 +146,24 @@ class OssVolume extends Volume
     public function getFileList(string $directory, bool $recursive): array
     {
         $results = [];
-        $prefix = rtrim($this->resolveLocalPath($directory), '\\/') . $this->delimiter;
+        $remoteDirectory = $this->getRemoteObjectPath($directory, true);
 
         for ($nextMarker = null; $nextMarker !== ''; ) {
             $listInfo = $this->getClient()->listObjects($this->bucket, [
-                'prefix' => $prefix,
+                'prefix' => $remoteDirectory,
                 'delimiter' => $this->delimiter,
                 'max-keys'  => 1000,
                 'marker'    => $nextMarker ?? '',
             ]);
 
             foreach ($listInfo->getPrefixList() as $prefix) {
-                $path = rtrim($this->resolveRemotePath($prefix->getPrefix()), $this->delimiter);
+                $path = $this->getLocalAssetPath($prefix->getPrefix());
 
                 $results[$path] = [
                     'type' => 'dir',
                     'path' => $path,
+                    'size' => 0,
+                    'dirname' => StringHelper::dirname($path),
                     'basename' => StringHelper::basename($path),
                 ];
 
@@ -171,11 +173,11 @@ class OssVolume extends Volume
             }
 
             foreach ($listInfo->getObjectList() as $object) {
-                if (($object->getSize() === 0) && ($object->getKey() === $prefix || $object->getKey() === $this->root . $this->delimiter)) {
+                if (($object->getSize() === 0) && ($object->getKey() === $remoteDirectory)) {
                     continue;
                 }
 
-                $path = $this->resolveRemotePath($object->getKey());
+                $path = $this->getLocalAssetPath($object->getKey());
 
                 $results[$path] = [
                     'type' => 'file',
@@ -201,7 +203,15 @@ class OssVolume extends Volume
      */
     public function getFileMetadata(string $uri): array
     {
-        return $this->getClient()->getObjectMeta($this->bucket, $this->resolveLocalPath($uri));
+        $path = $this->getRemoteObjectPath($uri);
+        $result = $this->getClient()->getObjectMeta($this->bucket, $path);
+
+        return [
+            'mimetype' => $result['content-type'],
+            'timestamp' => strtotime($result['last-modified']),
+            'size' => $result['content-length'],
+            'visibility' => $this->getClient()->getObjectAcl($this->bucket, $path),
+        ];
     }
 
     /**
@@ -213,7 +223,7 @@ class OssVolume extends Volume
      */
     public function createFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->resolveLocalPath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->bucket, $this->getRemoteObjectPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -225,7 +235,7 @@ class OssVolume extends Volume
      */
     public function updateFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->resolveLocalPath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->bucket, $this->getRemoteObjectPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -235,7 +245,7 @@ class OssVolume extends Volume
      */
     public function fileExists(string $path): bool
     {
-        $result = $this->getClient()->doesObjectExist($this->bucket, $this->resolveLocalPath($path));
+        $result = $this->getClient()->doesObjectExist($this->bucket, $this->getRemoteObjectPath($path));
 
         return $result;
     }
@@ -246,7 +256,7 @@ class OssVolume extends Volume
      */
     public function deleteFile(string $path)
     {
-        $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
+        $this->getClient()->deleteObject($this->bucket, $this->getRemoteObjectPath($path));
     }
 
     /**
@@ -257,8 +267,8 @@ class OssVolume extends Volume
     public function renameFile(string $path, string $newPath)
     {
         try {
-            $this->getClient()->copyObject($this->bucket, $this->resolveLocalPath($path), $this->bucket, $this->resolveLocalPath($newPath));
-            $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
+            $this->getClient()->copyObject($this->bucket, $this->getRemoteObjectPath($path), $this->bucket, $this->getRemoteObjectPath($newPath));
+            $this->getClient()->deleteObject($this->bucket, $this->getRemoteObjectPath($path));
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }
@@ -274,9 +284,9 @@ class OssVolume extends Volume
         try {
             $this->getClient()->copyObject(
                 $this->bucket,
-                $this->resolveLocalPath($path),
+                $this->getRemoteObjectPath($path),
                 $this->bucket,
-                $this->resolveLocalPath($newPath)
+                $this->getRemoteObjectPath($newPath)
             );
         } catch (OssException $exception) {
             throw new VolumeException($exception->getErrorMessage());
@@ -292,17 +302,13 @@ class OssVolume extends Volume
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
         if ($this->hasUrls) {
-            if ($this->isPublic) {
-                $rootUrl = $this->_completeSchema($this->getRootUrl());
-                $url = $rootUrl . $this->_encodeUriPath($uriPath);
-            } else {
-                $url = $this->grantClientPrivateDownload($this->resolveLocalPath($uriPath));
-            }
+            $url = $this->getRemoteObjectUrl($uriPath);
+
             if (!copy($url, $targetPath)) {
                 throw new VolumeException("Save asset {$url} to {$targetPath} failed");
             }
         } else {
-            $data = $this->getClient()->getObject($this->bucket, $this->resolveLocalPath($uriPath));
+            $data = $this->getClient()->getObject($this->bucket, $this->getRemoteObjectPath($uriPath));
             file_put_contents($targetPath, $data);
         }
 
@@ -315,7 +321,14 @@ class OssVolume extends Volume
      */
     public function getFileStream(string $uriPath)
     {
-        $stream = fopen($this->_completeSchema($uriPath), 'r');
+        if ($this->hasUrls && $this->isPublic) {
+            $stream = fopen($this->getRemoteObjectUrl($uriPath), 'r');
+        } else {
+            $stream = tmpfile();
+            $contents = $this->getClient()->getObject($this->bucket, $this->getRemoteObjectPath($uriPath));
+            fwrite($stream, $contents);
+            fseek($stream, 0);
+        }
 
         if (!$stream) {
             throw new AssetException('Could not open create the stream for “' . $uriPath . '”');
@@ -330,7 +343,7 @@ class OssVolume extends Volume
      */
     public function folderExists(string $path): bool
     {
-        return $this->getClient()->doesObjectExist($this->bucket, $this->resolveLocalPath($path));
+        return $this->getClient()->doesObjectExist($this->bucket, $this->getRemoteObjectPath($path, true));
     }
 
     /**
@@ -338,7 +351,7 @@ class OssVolume extends Volume
      */
     public function createDir(string $path)
     {
-        $this->getClient()->createObjectDir($this->bucket, $this->resolveLocalPath($path));
+        $this->getClient()->createObjectDir($this->bucket, $this->getRemoteObjectPath($path));
     }
 
     /**
@@ -353,9 +366,9 @@ class OssVolume extends Volume
 
         $objectList = [];
         foreach ($lists as $value) {
-            $objectList[] = $this->resolveRemotePath($value['path']);
+            $objectList[] = $this->getLocalAssetPath($value['path']);
         }
-        $objectList[] = $this->resolveRemotePath($path);
+        $objectList[] = $this->getLocalAssetPath($path);
 
         $this->getClient()->deleteObjects($this->bucket, $objectList);
 
@@ -449,29 +462,42 @@ class OssVolume extends Volume
         return $this->_client;
     }
 
-
     /**
      * @param string $path
      * @return string
      */
-    protected function resolveLocalPath(string $path): string
+    protected function getRemoteObjectUrl(string $path)
     {
-        if ($this->root == '') {
-            return ltrim($path, '\\/');
+        if ($this->isPublic) {
+            return $this->_completeSchema($this->getRootUrl()) . $this->_encodeUriPath($path);
         }
 
-        return $this->root . $this->delimiter . ltrim($path, '\\/');
+        return $this->grantClientPrivateDownload($this->getRemoteObjectPath($path));
+    }
+
+    /**
+     * @param string $path
+     * @param bool $isDir
+     * @return string
+     */
+    protected function getRemoteObjectPath(string $path, bool $isDir = false): string
+    {
+        $path = rtrim($path, '\\/');
+
+        if ($this->root) {
+            $path = rtrim($this->root . $this->delimiter . ltrim($path, '\\/'), '\\/');
+        }
+
+        return $isDir ? $path . $this->delimiter : $path;
     }
 
     /**
      * @param string $path
      * @return string
      */
-    protected function resolveRemotePath(string $path): string
+    protected function getLocalAssetPath(string $path): string
     {
-        if ($this->root == '') {
-            return ltrim($path, '\\/');
-        }
+        $path = trim($path, $this->delimiter);
 
         if (strpos($path, $this->root) === 0) {
             $path = substr($path, strlen($this->root));
