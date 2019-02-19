@@ -8,7 +8,9 @@ namespace panlatent\craft\aliyun\volumes;
 
 use Craft;
 use craft\base\Volume;
+use craft\errors\AssetException;
 use craft\errors\VolumeException;
+use craft\errors\VolumeObjectNotFoundException;
 use OSS\Core\OssException;
 use OSS\OssClient;
 use panlatent\craft\aliyun\Plugin;
@@ -112,7 +114,7 @@ class OssVolume extends Volume
      */
     public function getAllBuckets(): array
     {
-       return $this->getClient()->listBuckets()->getBucketList();
+        return $this->getClient()->listBuckets()->getBucketList();
     }
 
     /**
@@ -123,11 +125,11 @@ class OssVolume extends Volume
     public function grantClientPrivateDownload(string $path): string
     {
         if ($this->isPublic) {
-            return $this->url . '/' . $this->resolvePath($path);
+            return $this->url . '/' . $this->resolveLocalPath($path);
         }
 
         try {
-            return $this->getClient()->signUrl($this->bucket, $this->resolvePath($path), $this->clientDownloadExpires);
+            return $this->getClient()->signUrl($this->bucket, $this->resolveLocalPath($path), $this->clientDownloadExpires);
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }
@@ -140,30 +142,53 @@ class OssVolume extends Volume
      * @param string $directory
      * @param bool $recursive
      * @return array
-     * @throws VolumeException
      */
     public function getFileList(string $directory, bool $recursive): array
     {
         $results = [];
+        $prefix = rtrim($this->resolveLocalPath($directory), '\\/') . $this->delimiter;
 
-        try {
+        for ($nextMarker = null; $nextMarker !== ''; ) {
             $listInfo = $this->getClient()->listObjects($this->bucket, [
-                'prefix' => $this->resolvePath($directory),
-                'delimiter' => $this->delimiter
+                'prefix' => $prefix,
+                'delimiter' => $this->delimiter,
+                'max-keys'  => 1000,
+                'marker'    => $nextMarker ?? '',
             ]);
-        } catch (OssException $exception) {
-            throw new VolumeException($exception->getMessage());
-        }
 
-        foreach ($listInfo->getObjectList() as $object) {
-                $results[$object->getKey()] = [
-                    'path' => $object->getKey(),
-                    'dirname' => StringHelper::dirname($object->getKey()),
-                    'basename' => StringHelper::basename($object->getKey()),
+            foreach ($listInfo->getPrefixList() as $prefix) {
+                $path = rtrim($this->resolveRemotePath($prefix->getPrefix()), $this->delimiter);
+
+                $results[$path] = [
+                    'type' => 'dir',
+                    'path' => $path,
+                    'basename' => StringHelper::basename($path),
+                ];
+
+                if ($recursive) {
+                    $results = $results + $this->getFileList($path, $recursive);
+                }
+            }
+
+            foreach ($listInfo->getObjectList() as $object) {
+                if (($object->getSize() === 0) && ($object->getKey() === $prefix || $object->getKey() === $this->root . $this->delimiter)) {
+                    continue;
+                }
+
+                $path = $this->resolveRemotePath($object->getKey());
+
+                $results[$path] = [
+                    'type' => 'file',
+                    'path' => $path,
                     'size' => $object->getSize(),
-                    'timestamp' => $object->getLastModified(),
+                    'timestamp' => strtotime($object->getLastModified()),
+                    'dirname' => StringHelper::dirname($path),
+                    'basename' => StringHelper::basename($path),
                     'mimeType' => $object->getType(),
                 ];
+            }
+
+            $nextMarker = $listInfo->getNextMarker();
         }
 
         return $results;
@@ -176,7 +201,7 @@ class OssVolume extends Volume
      */
     public function getFileMetadata(string $uri): array
     {
-        return $this->getClient()->getObjectMeta($this->bucket, $this->resolvePath($uri));
+        return $this->getClient()->getObjectMeta($this->bucket, $this->resolveLocalPath($uri));
     }
 
     /**
@@ -188,7 +213,7 @@ class OssVolume extends Volume
      */
     public function createFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->resolvePath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->bucket, $this->resolveLocalPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -200,7 +225,7 @@ class OssVolume extends Volume
      */
     public function updateFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->resolvePath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->bucket, $this->resolveLocalPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -210,7 +235,7 @@ class OssVolume extends Volume
      */
     public function fileExists(string $path): bool
     {
-        $result = $this->getClient()->doesObjectExist($this->bucket, $this->resolvePath($path));
+        $result = $this->getClient()->doesObjectExist($this->bucket, $this->resolveLocalPath($path));
 
         return $result;
     }
@@ -221,7 +246,7 @@ class OssVolume extends Volume
      */
     public function deleteFile(string $path)
     {
-        $this->getClient()->deleteObject($this->bucket, $this->resolvePath($path));
+        $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
     }
 
     /**
@@ -232,14 +257,8 @@ class OssVolume extends Volume
     public function renameFile(string $path, string $newPath)
     {
         try {
-            $this->getClient()->copyObject(
-                $this->bucket,
-                $this->resolvePath($path),
-                $this->bucket,
-                $this->resolvePath($newPath)
-            );
-
-            $this->getClient()->deleteObject($this->bucket, $this->resolvePath($path));
+            $this->getClient()->copyObject($this->bucket, $this->resolveLocalPath($path), $this->bucket, $this->resolveLocalPath($newPath));
+            $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }
@@ -255,9 +274,9 @@ class OssVolume extends Volume
         try {
             $this->getClient()->copyObject(
                 $this->bucket,
-                $this->resolvePath($path),
+                $this->resolveLocalPath($path),
                 $this->bucket,
-                $this->resolvePath($newPath)
+                $this->resolveLocalPath($newPath)
             );
         } catch (OssException $exception) {
             throw new VolumeException($exception->getErrorMessage());
@@ -277,22 +296,32 @@ class OssVolume extends Volume
                 $rootUrl = $this->_completeSchema($this->getRootUrl());
                 $url = $rootUrl . $this->_encodeUriPath($uriPath);
             } else {
-                $url = $this->grantClientPrivateDownload($this->resolvePath($uriPath));
+                $url = $this->grantClientPrivateDownload($this->resolveLocalPath($uriPath));
             }
             if (!copy($url, $targetPath)) {
                 throw new VolumeException("Save asset {$url} to {$targetPath} failed");
             }
         } else {
-            $data = $this->getClient()->getObject($this->bucket, $this->resolvePath($uriPath));
+            $data = $this->getClient()->getObject($this->bucket, $this->resolveLocalPath($uriPath));
             file_put_contents($targetPath, $data);
         }
 
         return filesize($targetPath);
     }
 
+    /**
+     * @param string $uriPath
+     * @return resource
+     */
     public function getFileStream(string $uriPath)
     {
+        $stream = fopen($this->_completeSchema($uriPath), 'r');
 
+        if (!$stream) {
+            throw new AssetException('Could not open create the stream for “' . $uriPath . '”');
+        }
+
+        return $stream;
     }
 
     /**
@@ -301,12 +330,15 @@ class OssVolume extends Volume
      */
     public function folderExists(string $path): bool
     {
-        return true;
+        return $this->getClient()->doesObjectExist($this->bucket, $this->resolveLocalPath($path));
     }
 
+    /**
+     * @param string $path
+     */
     public function createDir(string $path)
     {
-        $this->getClient()->createObjectDir($this->bucket, $this->resolvePath($path));
+        $this->getClient()->createObjectDir($this->bucket, $this->resolveLocalPath($path));
     }
 
     /**
@@ -314,7 +346,21 @@ class OssVolume extends Volume
      */
     public function deleteDir(string $path)
     {
-        $this->getClient()->deleteObject($this->bucket, $this->resolvePath($path));
+        $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
+
+        $lists = $this->getFileList($path, true);
+        if (empty($lists)) {
+            return false;
+        }
+
+        $objectList = [];
+        foreach ($lists as $value) {
+            $objectList[] = $this->resolveRemotePath($value['path']);
+        }
+
+        $this->getClient()->deleteObjects($this->bucket, $objectList);
+
+        return true;
     }
 
     /**
@@ -322,7 +368,46 @@ class OssVolume extends Volume
      */
     public function renameDir(string $path, string $newName)
     {
-        throw new VolumeException('No support rename folder');
+        // Get the list of dir contents
+        $fileList = $this->getFileList($path, true);
+        $directoryList = [$path];
+
+        $parts = explode('/', $path);
+
+        array_pop($parts);
+        $parts[] = $newName;
+
+        $newPath = implode('/', $parts);
+
+        $pattern = '/^' . preg_quote($path, '/') . '/';
+
+        // Rename every file and build a list of directories
+        foreach ($fileList as $object) {
+            if ($object['type'] !== 'dir') {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            } else {
+                $directoryList[] = $object['path'];
+            }
+        }
+
+        // It's possible for a folder object to not exist on remote volumes, so to throw an exception
+        // we must make sure that there are no files AS WELL as no folder.
+        if (empty($fileList) && !$this->folderExists($path)) {
+            throw new VolumeObjectNotFoundException('No folder exists at path: ' . $path);
+        }
+
+        // The files are moved, but the directories remain. Delete them.
+        foreach ($directoryList as $dir) {
+            try {
+                $this->deleteDir($dir);
+            } catch (\Throwable $e) {
+                // This really varies between volume types and whether folders are virtual or real
+                // So just in case, catch the exception, log it and then move on
+                Craft::warning($e->getMessage());
+                continue;
+            }
+        }
     }
 
     /**
@@ -370,13 +455,30 @@ class OssVolume extends Volume
      * @param string $path
      * @return string
      */
-    protected function resolvePath(string $path): string
+    protected function resolveLocalPath(string $path): string
     {
         if ($this->root == '') {
-            return $path;
+            return ltrim($path, '\\/');
         }
 
-        return $this->root . '/' . ltrim($path, '/');
+        return $this->root . $this->delimiter . ltrim($path, '\\/');
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    protected function resolveRemotePath(string $path): string
+    {
+        if ($this->root == '') {
+            return ltrim($path, '\\/');
+        }
+
+        if (strpos($path, $this->root) === 0) {
+            $path = substr($path, strlen($this->root));
+        }
+
+        return ltrim($path, $this->delimiter);
     }
 
     /**
@@ -391,7 +493,7 @@ class OssVolume extends Volume
 
         $schema = $this->serverHttpsDownload ? 'https://' : 'http://';
 
-        return  $schema . ltrim($url, '/');
+        return $schema . ltrim($url, '/');
     }
 
     /**
@@ -400,7 +502,7 @@ class OssVolume extends Volume
      */
     private function _encodeUriPath(string $uriPath): string
     {
-        $uri = array_map(function($value) {
+        $uri = array_map(function ($value) {
             return rawurlencode($value);
         }, (array)explode('/', $uriPath));
 
