@@ -7,8 +7,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## Unreleased
 ### Updated
 
-## [0.1.2] - 2019-02-19
+## [0.1.3] - 2019-02-19
+### Fixed
+- 修复了 OSS Volume 不能读取私有Bucket文件的问题
 
+## [0.1.2] - 2019-02-19
 ### Fixed
 - 修复了 OSS Volume 不能正确列出目录索引的问题
 - 修复了 OSS Volume 重命名目录未删除原目录的问题
