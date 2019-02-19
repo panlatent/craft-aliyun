@@ -47,3 +47,8 @@ Configuration
 
 3. Set `bucket` and the volume's `public URLs`, the value is URL from `bucket` bound URLs.
 
+FAQ
+---
+
+A: 如何同步OSS中已存在（或通过其他途径添加的）资源？
+Q：通过 CP -> 实用工具 -> 资源索引
