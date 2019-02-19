@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 - 修复了 OSS Volume 不能正确列出目录索引的问题
+- 修复了 OSS Volume 重命名目录未删除原目录的问题
 
 ## [0.1.2-alpha.1] - 2018-12-09
 ### Added

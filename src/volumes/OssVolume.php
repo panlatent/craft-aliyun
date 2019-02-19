@@ -346,8 +346,6 @@ class OssVolume extends Volume
      */
     public function deleteDir(string $path)
     {
-        $this->getClient()->deleteObject($this->bucket, $this->resolveLocalPath($path));
-
         $lists = $this->getFileList($path, true);
         if (empty($lists)) {
             return false;
@@ -357,6 +355,7 @@ class OssVolume extends Volume
         foreach ($lists as $value) {
             $objectList[] = $this->resolveRemotePath($value['path']);
         }
+        $objectList[] = $this->resolveRemotePath($path);
 
         $this->getClient()->deleteObjects($this->bucket, $objectList);
 
