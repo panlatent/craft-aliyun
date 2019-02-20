@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+### Fixed
+
+## [0.1.5] - 2019-02-20
+### Updated
 - 移除了 OSS Volume 的 isPublic 属性
 
 ### Fixed
