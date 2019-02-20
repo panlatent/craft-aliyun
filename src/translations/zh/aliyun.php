@@ -21,6 +21,8 @@ return [
     'Aliyun OSS Volume' => '阿里云对象存储卷',
     'Access Key' => 'Access Key',
     'Secret Key' => 'Secret Key',
+    'Allow Volume Auth Settings' => '允许卷设置认证方式',
+    'Allow a OSS Volume set its Access Key nad Secret Key.' => '允许OSS卷设置它自己的 Access Key 和 Secret Key。',
     'Endpoint' => '地域节点',
     'Bucket' => '存储空间',
     'Access Control' => '访问控制',
@@ -36,5 +38,5 @@ return [
     'Use Global Settings' => '使用全局设置',
     'Use global plugin settings. This requires you to set the plugin settings' => '使用全局的插件设置，这需要你配置插件设置',
     'Endpoint List' => '节点列表',
-    '(Internal)' => '（ 内网 ）',
+    'Internal' => '内网',
 ];

@@ -1,74 +1,71 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.checkboxField({
-    label: "Use Global Settings"|t('aliyun'),
-    instructions: 'Use global plugin settings. This requires you to set the plugin settings'|t('aliyun'),
-    id: 'useGlobalSettings',
-    name: 'useGlobalSettings',
-    checked: volume.useGlobalSettings,
-    errors: volume.getErrors('useGlobalSettings'),
-    reverseToggle: 'custom-settings'
-}) }}
+{% if allowAuthSettings %}
 
-<div id="custom-settings" class="nested-fields{% if volume.useGlobalSettings %} hidden{% endif %}">
-
-    {{ forms.textField({
-        label: "Access Key"|t('aliyun'),
-        instructions: "Please enter a access key for your Aliyun account"|t('aliyun'),
-        id: 'accessKey',
-        class: 'ltr',
-        name: 'accessKey',
-        value: volume.accessKey,
-        errors: volume.getErrors('accessKey'),
-        required: true,
-        placeholder: "Access Key"|t('aliyun')
+    {{ forms.checkboxField({
+        label: "Use Global Settings"|t('aliyun'),
+        instructions: 'Use global plugin settings. This requires you to set the plugin settings'|t('aliyun'),
+        id: 'useGlobalSettings',
+        name: 'useGlobalSettings',
+        checked: volume.useGlobalSettings,
+        errors: volume.getErrors('useGlobalSettings'),
+        reverseToggle: 'custom-settings'
     }) }}
 
-    {{ forms.passwordField({
-        label: "Secret Key"|t('aliyun'),
-        instructions: "Please enter a secret key for your Aliyun account"|t('aliyun'),
-        id: 'secretKey',
-        class: 'ltr',
-        name: 'secretKey',
-        value: volume.secretKey,
-        errors: volume.getErrors('secretKey'),
-        required: true,
-        placeholder: "Secret Key"|t('aliyun')
-    }) }}
+    <div id="custom-settings" class="nested-fields{% if volume.useGlobalSettings %} hidden{% endif %}">
 
-</div>
+        {{ forms.textField({
+            label: "Access Key"|t('aliyun'),
+            instructions: "Please enter a access key for your Aliyun account"|t('aliyun'),
+            id: 'accessKey',
+            class: 'ltr',
+            name: 'accessKey',
+            value: volume.accessKey,
+            errors: volume.getErrors('accessKey'),
+            required: true,
+            placeholder: "Access Key"|t('aliyun')
+        }) }}
 
-{{ forms.textField({
-    label: "Endpoint"|t('aliyun'),
-    instructions: "The storage space endpoint"|t('aliyun'),
-    id: 'endpoint',
-    class: 'ltr endpoint',
-    name: 'endpoint',
-    value: volume.endpoint,
-    errors: volume.getErrors('endpoint'),
-    required: true,
-    placeholder: "e.g. oss-cn-beijing.aliyuncs.com"|t('aliyun')
-}) }}
+        {{ forms.passwordField({
+            label: "Secret Key"|t('aliyun'),
+            instructions: "Please enter a secret key for your Aliyun account"|t('aliyun'),
+            id: 'secretKey',
+            class: 'ltr',
+            name: 'secretKey',
+            value: volume.secretKey,
+            errors: volume.getErrors('secretKey'),
+            required: true,
+            placeholder: "Secret Key"|t('aliyun')
+        }) }}
+
+    </div>
+
+{% endif %}
 
 {% set endpointOptions = [] %}
 {% for endpoint in volume.endpoints %}
     {% set endpointOptions = endpointOptions|merge([
         {
-            label: endpoint.name,
+            label: endpoint.name ~  ' ' ~ endpoint.public,
             value: endpoint.public
         },
         {
-            label: endpoint.name  ~ '(Internal)'|t('aliyun'),
+            label: endpoint.name  ~ ' ' ~ endpoint.internal ~ ' [' ~'Internal'|t('aliyun') ~  ']',
             value: endpoint.internal
         }
     ]) %}
 {% endfor %}
 
 {{ forms.selectField({
-    label: 'Endpoint List'|t('aliyun'),
-    class: 'set-endpoint',
-    value: volume.endpoint,
+    label: "Endpoint"|t('aliyun'),
+    instructions: "The storage space endpoint"|t('aliyun'),
+    required: true,
+    id: 'endpoint',
+    class: 'ltr endpoint',
+    name: 'endpoint',
     options: endpointOptions,
+    value: volume.endpoint,
+    errors: volume.getErrors('endpoint'),
 }) }}
 
 {% if volume.useGlobalSettings %}
@@ -124,7 +121,7 @@
     required: true
 }) }}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: "Root Path"|t('aliyun'),
     instructions: "The volume file will be saved to the subdirectory of this Bucket"|t('aliyun'),
     id: 'root',
@@ -132,13 +129,6 @@
     name: 'root',
     value: volume.root,
     errors: volume.getErrors('root'),
-    placeholder: "path/to/folder"|t('aliyun')
+    placeholder: "path/to/folder"|t('aliyun'),
+    suggestEnvVars: true
 }) }}
-
-{% js %}
-    $('.set-endpoint').change(function() {
-        $('.endpoint').val($(this).find(':selected').val());
-
-        return false;
-    });
-{% endjs %}

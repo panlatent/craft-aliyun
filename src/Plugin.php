@@ -7,9 +7,7 @@
 namespace panlatent\craft\aliyun;
 
 use Craft;
-use craft\events\PluginEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\services\Plugins;
 use craft\services\Volumes;
 use panlatent\craft\aliyun\models\Settings;
 use panlatent\craft\aliyun\volumes\OssVolume;
@@ -76,17 +74,6 @@ class Plugin extends \craft\base\Plugin
         // Register volume types
         Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $e) {
             $e->types[] = OssVolume::class;
-        });
-
-        Event::on(Plugins::class, Plugins::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, function (PluginEvent $event) {
-            if ($event->plugin === $this) {
-                $settings = $this->getSettings();
-                if ($settings->useDotEnv) {
-                    $config = Craft::$app->getConfig();
-                    $config->setDotEnvVar('ALIYUN_ACCESS_KEY', $settings->getAccessKey());
-                    $config->setDotEnvVar('ALIYUN_SECRET_KEY', $settings->getSecretKey());
-                }
-            }
         });
 
         Craft::info(

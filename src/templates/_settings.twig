@@ -1,36 +1,29 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.textField({
+{{ forms.autosuggestField({
     label: "Access Key"|t('aliyun'),
+    instructions: "",
+    required: true,
     name: "accessKey",
     value: settings.accessKey,
-    required: true
+    suggestEnvVars: true
 }) }}
 
-{{ forms.passwordField({
+{{ forms.autosuggestField({
     label: "Secret Key"|t('aliyun'),
+    instructions: "",
+    required: true,
     id: 'secretKey',
     name: "secretKey",
     value: settings.secretKey,
-    required: true
+    suggestEnvVars: true
 }) }}
 
-{{ forms.checkboxField({
-    label: "Use environment variables storage {Access Key} and {Secret Key}"|t('aliyun', {
-        'Access Key': '<b>' ~ 'Access Key'|t('aliyun') ~ '</b>',
-        'Secret Key': '<b>' ~ 'Secret Key'|t('aliyun') ~ '</b>',
-    }),
-    name: "useDotEnv",
-    checked: settings.useDotEnv,
+{{ forms.lightSwitchField({
+    label: "Allow Volume Auth Settings"|t('aliyun'),
+    instructions: "Allow a OSS Volume set its Access Key nad Secret Key."|t('aliyun'),
+    required: false,
+    id: 'allowVolumeAuthSettings',
+    name: "allowVolumeAuthSettings",
+    on: settings.allowVolumeAuthSettings,
 }) }}
-
-{% js %}
-    $secretKeyInput = $('#settings-secretKey');
-    new Craft.PasswordInput($secretKeyInput, {
-        onToggleInput: $.proxy(function($newPasswordInput) {
-            this.removeListener($secretKeyInput, 'textchange');
-            $secretKeyInput = $newPasswordInput;
-            this.addListener($secretKeyInput, 'textchange', 'validate');
-        }, this)
-    });
-{% endjs %}

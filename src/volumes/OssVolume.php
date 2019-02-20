@@ -99,6 +99,9 @@ class OssVolume extends Volume
         return require_once dirname(__DIR__) . '/config/endpoints.php';
     }
 
+    // Public Methods
+    // =========================================================================
+
     /**
      * Init.
      */
@@ -135,8 +138,14 @@ class OssVolume extends Volume
         }
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @return string|null
+     */
+    public function getRoot()
+    {
+        return Craft::parseEnv($this->root);
+    }
+
 
     /**
      * @param string $directory
@@ -429,6 +438,7 @@ class OssVolume extends Volume
     {
         return Craft::$app->getView()->renderTemplate('aliyun/_components/volumes/OssVolume', [
             'volume' => $this,
+            'allowAuthSettings' => Plugin::$plugin->getSettings()->allowVolumeAuthSettings,
         ]);
     }
 
@@ -443,8 +453,8 @@ class OssVolume extends Volume
         }
 
         try {
-            if ($this->useGlobalSettings) {
-                $settings = Plugin::$plugin->getSettings();
+            $settings = Plugin::$plugin->getSettings();
+            if (!$settings->allowVolumeAuthSettings || $this->useGlobalSettings) {
                 $accessKey = $settings->getAccessKey();
                 $secretKey = $settings->getSecretKey();
             } else {
@@ -484,8 +494,8 @@ class OssVolume extends Volume
     {
         $path = rtrim($path, '\\/');
 
-        if ($this->root) {
-            $path = rtrim($this->root . $this->delimiter . ltrim($path, '\\/'), '\\/');
+        if ($this->getRoot()) {
+            $path = rtrim($this->getRoot() . $this->delimiter . ltrim($path, '\\/'), '\\/');
         }
 
         return $isDir ? $path . $this->delimiter : $path;
@@ -499,8 +509,8 @@ class OssVolume extends Volume
     {
         $path = trim($path, $this->delimiter);
 
-        if (strpos($path, $this->root) === 0) {
-            $path = substr($path, strlen($this->root));
+        if (strpos($path, $this->getRoot()) === 0) {
+            $path = substr($path, strlen($this->getRoot()));
         }
 
         return ltrim($path, $this->delimiter);
