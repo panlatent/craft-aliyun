@@ -449,10 +449,16 @@ class OssVolume extends Volume
 
     /**
      * @param string $path
+     * @param bool $isRemotePath
      * @return string
+     * @throws VolumeException
      */
-    protected function getRemoteObjectUrl(string $path): string
+    protected function getRemoteObjectUrl(string $path, bool $isRemotePath = false): string
     {
+        if (!$isRemotePath) {
+            $path = $this->getRemoteObjectPath($path);
+        }
+
         if ($this->hasUrls) {
             return $this->_completeSchema($this->getRootUrl()) . $this->_encodeUriPath($path);
         }

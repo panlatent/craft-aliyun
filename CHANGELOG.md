@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+- 移除了 OSS Volume 的 isPublic 属性
+
+### Fixed
+- 修复了公开卷 URL 路径问题
+- 修复了目录下文件为空时，无法删除目录的问题
+- 修复了不显示 Bucket 列表的问题
 
 ## [0.1.4] - 2019-02-20
 ### Updated
