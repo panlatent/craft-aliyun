@@ -124,6 +124,14 @@ class OssVolume extends Volume
     }
 
     /**
+     * @return string|null
+     */
+    public function getBucket()
+    {
+        return Craft::parseEnv($this->bucket);
+    }
+
+    /**
      * @param string $directory
      * @param bool $recursive
      * @return array
@@ -134,7 +142,7 @@ class OssVolume extends Volume
         $remoteDirectory = $this->getRemoteObjectPath($directory, true);
 
         for ($nextMarker = null; $nextMarker !== ''; ) {
-            $listInfo = $this->getClient()->listObjects($this->bucket, [
+            $listInfo = $this->getClient()->listObjects($this->getBucket(), [
                 'prefix' => $remoteDirectory,
                 'delimiter' => $this->delimiter,
                 'max-keys'  => 1000,
@@ -189,13 +197,13 @@ class OssVolume extends Volume
     public function getFileMetadata(string $uri): array
     {
         $path = $this->getRemoteObjectPath($uri);
-        $result = $this->getClient()->getObjectMeta($this->bucket, $path);
+        $result = $this->getClient()->getObjectMeta($this->getBucket(), $path);
 
         return [
             'mimetype' => $result['content-type'],
             'timestamp' => strtotime($result['last-modified']),
             'size' => $result['content-length'],
-            'visibility' => $this->getClient()->getObjectAcl($this->bucket, $path),
+            'visibility' => $this->getClient()->getObjectAcl($this->getBucket(), $path),
         ];
     }
 
@@ -208,7 +216,7 @@ class OssVolume extends Volume
      */
     public function createFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->getRemoteObjectPath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->getBucket(), $this->getRemoteObjectPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -220,7 +228,7 @@ class OssVolume extends Volume
      */
     public function updateFileByStream(string $path, $stream, array $config): array
     {
-        return $this->getClient()->putObject($this->bucket, $this->getRemoteObjectPath($path), stream_get_contents($stream));
+        return $this->getClient()->putObject($this->getBucket(), $this->getRemoteObjectPath($path), stream_get_contents($stream));
     }
 
     /**
@@ -230,7 +238,7 @@ class OssVolume extends Volume
      */
     public function fileExists(string $path): bool
     {
-        $result = $this->getClient()->doesObjectExist($this->bucket, $this->getRemoteObjectPath($path));
+        $result = $this->getClient()->doesObjectExist($this->getBucket(), $this->getRemoteObjectPath($path));
 
         return $result;
     }
@@ -241,7 +249,7 @@ class OssVolume extends Volume
      */
     public function deleteFile(string $path)
     {
-        $this->getClient()->deleteObject($this->bucket, $this->getRemoteObjectPath($path));
+        $this->getClient()->deleteObject($this->getBucket(), $this->getRemoteObjectPath($path));
     }
 
     /**
@@ -252,8 +260,8 @@ class OssVolume extends Volume
     public function renameFile(string $path, string $newPath)
     {
         try {
-            $this->getClient()->copyObject($this->bucket, $this->getRemoteObjectPath($path), $this->bucket, $this->getRemoteObjectPath($newPath));
-            $this->getClient()->deleteObject($this->bucket, $this->getRemoteObjectPath($path));
+            $this->getClient()->copyObject($this->getBucket(), $this->getRemoteObjectPath($path), $this->getBucket(), $this->getRemoteObjectPath($newPath));
+            $this->getClient()->deleteObject($this->getBucket(), $this->getRemoteObjectPath($path));
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }
@@ -268,9 +276,9 @@ class OssVolume extends Volume
     {
         try {
             $this->getClient()->copyObject(
-                $this->bucket,
+                $this->getBucket(),
                 $this->getRemoteObjectPath($path),
-                $this->bucket,
+                $this->getBucket(),
                 $this->getRemoteObjectPath($newPath)
             );
         } catch (OssException $exception) {
@@ -293,7 +301,7 @@ class OssVolume extends Volume
                 throw new VolumeException("Save asset {$url} to {$targetPath} failed");
             }
         } else {
-            $data = $this->getClient()->getObject($this->bucket, $this->getRemoteObjectPath($uriPath));
+            $data = $this->getClient()->getObject($this->getBucket(), $this->getRemoteObjectPath($uriPath));
             file_put_contents($targetPath, $data);
         }
 
@@ -310,7 +318,7 @@ class OssVolume extends Volume
             $stream = fopen($this->getRemoteObjectUrl($uriPath), 'r');
         } else {
             $stream = tmpfile();
-            $contents = $this->getClient()->getObject($this->bucket, $this->getRemoteObjectPath($uriPath));
+            $contents = $this->getClient()->getObject($this->getBucket(), $this->getRemoteObjectPath($uriPath));
             fwrite($stream, $contents);
             fseek($stream, 0);
         }
@@ -328,7 +336,7 @@ class OssVolume extends Volume
      */
     public function folderExists(string $path): bool
     {
-        return $this->getClient()->doesObjectExist($this->bucket, $this->getRemoteObjectPath($path, true));
+        return $this->getClient()->doesObjectExist($this->getBucket(), $this->getRemoteObjectPath($path, true));
     }
 
     /**
@@ -336,7 +344,7 @@ class OssVolume extends Volume
      */
     public function createDir(string $path)
     {
-        $this->getClient()->createObjectDir($this->bucket, $this->getRemoteObjectPath($path));
+        $this->getClient()->createObjectDir($this->getBucket(), $this->getRemoteObjectPath($path));
     }
 
     /**
@@ -354,7 +362,7 @@ class OssVolume extends Volume
         }
         $objectList[] = $this->getRemoteObjectPath($path, true);
 
-        $this->getClient()->deleteObjects($this->bucket, $objectList);
+        $this->getClient()->deleteObjects($this->getBucket(), $objectList);
 
         return true;
     }
@@ -459,7 +467,7 @@ class OssVolume extends Volume
         }
 
         try {
-            $url = $this->getClient()->signUrl($this->bucket, $this->getRemoteObjectPath($path), $this->clientDownloadExpires);
+            $url = $this->getClient()->signUrl($this->getBucket(), $this->getRemoteObjectPath($path), $this->clientDownloadExpires);
         } catch (OssException $exception) {
             throw new VolumeException($exception->getMessage());
         }

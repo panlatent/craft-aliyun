@@ -25,6 +25,7 @@ return [
     'Allow a OSS Volume set its Access Key nad Secret Key.' => '允许OSS卷设置它自己的 Access Key 和 Secret Key。',
     'Endpoint' => '地域节点',
     'Bucket' => '存储空间',
+    'Buckets' => '可用存储空间',
     'Access Control' => '访问控制',
     'Root Path' => '根路径',
     'The storage space endpoint' => '这个存储空间的地域节点',

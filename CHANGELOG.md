@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+- 支持 OSS Volume 从环境中获取 Bucket
+
 ### Fixed
 - 修复 OSS Volume Object URL 生成错误
 

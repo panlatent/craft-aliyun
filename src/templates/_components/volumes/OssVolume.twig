@@ -68,46 +68,17 @@
     errors: volume.getErrors('endpoint'),
 }) }}
 
-{% if not allowAuthSettings or volume.useGlobalSettings %}
-
-    {% set bucketOptions = [] %}
-    {% for bucket in volume.allBuckets %}
-        {% set bucketOptions = bucketOptions|merge([
-            {
-                label: bucket.name(),
-                value: bucket.name(),
-            }
-        ]) %}
-    {% endfor %}
-
-    {{ forms.selectField({
-        label: "Bucket"|t('aliyun'),
-        instructions: "Storage space name"|t('aliyun'),
-        id: 'bucket',
-        class: 'ltr',
-        name: 'bucket',
-        options: bucketOptions,
-        value: volume.bucket,
-        errors: volume.getErrors('bucket'),
-        required: true,
-        placeholder: "Bucket ID"|t('aliyun')
-    }) }}
-
-{% else %}
-
-    {{ forms.textField({
-        label: "Bucket"|t('aliyun'),
-        instructions: "Storage space name"|t('aliyun'),
-        id: 'bucket',
-        class: 'ltr',
-        name: 'bucket',
-        value: volume.bucket,
-        errors: volume.getErrors('bucket'),
-        required: true,
-        placeholder: "Bucket ID"|t('aliyun')
-    }) }}
-
-{% endif %}
+{{ forms.autosuggestField({
+    label: "Bucket"|t('aliyun'),
+    instructions: "Storage space name"|t('aliyun'),
+    required: true,
+    id: 'bucket',
+    class: 'ltr',
+    name: 'bucket',
+    value: volume.bucket,
+    errors: volume.getErrors('bucket'),
+    suggestEnvVars: true
+}) }}
 
 {{ forms.autosuggestField({
     label: "Root Path"|t('aliyun'),
@@ -120,3 +91,14 @@
     placeholder: "path/to/folder"|t('aliyun'),
     suggestEnvVars: true
 }) }}
+
+<hr>
+
+{% if not allowAuthSettings or volume.useGlobalSettings %}
+    <h4>{{ "Buckets"|t('aliyun') }}</h4>
+    <ul>
+        {% for bucket in volume.allBuckets %}
+            <li>{{ bucket.name }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
