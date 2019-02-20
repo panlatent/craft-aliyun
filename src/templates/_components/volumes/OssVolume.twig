@@ -68,6 +68,15 @@
     errors: volume.getErrors('endpoint'),
 }) }}
 
+{% set bucketSuggestions = [] %}
+{% if not allowAuthSettings or volume.useGlobalSettings %}
+    {% for bucket in volume.allBuckets %}
+        {% set bucketSuggestions = bucketSuggestions|merge([{
+            name: bucket.name
+        }]) %}
+    {% endfor %}
+{% endif %}
+
 {{ forms.autosuggestField({
     label: "Bucket"|t('aliyun'),
     instructions: "Storage space name"|t('aliyun'),
@@ -77,7 +86,11 @@
     name: 'bucket',
     value: volume.bucket,
     errors: volume.getErrors('bucket'),
-    suggestEnvVars: true
+    suggestEnvVars: true,
+    suggestions: craft.cp.getEnvSuggestions()|merge([{
+        label: "Buckets"|t('aliyun'),
+        data: bucketSuggestions,
+    }]),
 }) }}
 
 {{ forms.autosuggestField({
@@ -89,16 +102,5 @@
     value: volume.root,
     errors: volume.getErrors('root'),
     placeholder: "path/to/folder"|t('aliyun'),
-    suggestEnvVars: true
+    suggestEnvVars: true,
 }) }}
-
-<hr>
-
-{% if not allowAuthSettings or volume.useGlobalSettings %}
-    <h4>{{ "Buckets"|t('aliyun') }}</h4>
-    <ul>
-        {% for bucket in volume.allBuckets %}
-            <li>{{ bucket.name }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}

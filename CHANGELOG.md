@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+- 为 OSS Volume 设置添加了已有 Bucket 的自动完成功能
+
 ### Fixed
 - 修复创建新 OSS Volume 时因为缺少节点导致获取 Bucket 列表异常
 
