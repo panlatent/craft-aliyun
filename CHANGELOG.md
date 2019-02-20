@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+
+## [0.1.4] - 2019-02-20
+### Updated
 - 插件设置页面支持环境变量自动完成
 - OSS Volume 根路径设置支持环境变量及自动完成
 
