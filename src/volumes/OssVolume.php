@@ -53,11 +53,6 @@ class OssVolume extends Volume
     /**
      * @var string
      */
-    public $isPublic = true;
-
-    /**
-     * @var string
-     */
     public $root = '';
 
     /**
@@ -121,31 +116,12 @@ class OssVolume extends Volume
     }
 
     /**
-     * @param string $path
-     * @return string
-     * @throws VolumeException
-     */
-    public function grantClientPrivateDownload(string $path): string
-    {
-        if ($this->isPublic) {
-            return $this->url . '/' . $this->getRemoteObjectPath($path);
-        }
-
-        try {
-            return $this->getClient()->signUrl($this->bucket, $this->getRemoteObjectPath($path), $this->clientDownloadExpires);
-        } catch (OssException $exception) {
-            throw new VolumeException($exception->getMessage());
-        }
-    }
-
-    /**
      * @return string|null
      */
     public function getRoot()
     {
         return Craft::parseEnv($this->root);
     }
-
 
     /**
      * @param string $directory
@@ -330,7 +306,7 @@ class OssVolume extends Volume
      */
     public function getFileStream(string $uriPath)
     {
-        if ($this->hasUrls && $this->isPublic) {
+        if ($this->hasUrls) {
             $stream = fopen($this->getRemoteObjectUrl($uriPath), 'r');
         } else {
             $stream = tmpfile();
@@ -368,16 +344,15 @@ class OssVolume extends Volume
      */
     public function deleteDir(string $path)
     {
-        $lists = $this->getFileList($path, true);
-        if (empty($lists)) {
-            return false;
-        }
-
         $objectList = [];
-        foreach ($lists as $value) {
-            $objectList[] = $this->getLocalAssetPath($value['path']);
+
+        $lists = $this->getFileList($path, true);
+        if (!empty($lists)) {
+            foreach ($lists as $value) {
+                $objectList[] = $this->getRemoteObjectPath($value['path']);
+            }
         }
-        $objectList[] = $this->getLocalAssetPath($path);
+        $objectList[] = $this->getRemoteObjectPath($path, true);
 
         $this->getClient()->deleteObjects($this->bucket, $objectList);
 
@@ -476,13 +451,19 @@ class OssVolume extends Volume
      * @param string $path
      * @return string
      */
-    protected function getRemoteObjectUrl(string $path)
+    protected function getRemoteObjectUrl(string $path): string
     {
-        if ($this->isPublic) {
+        if ($this->hasUrls) {
             return $this->_completeSchema($this->getRootUrl()) . $this->_encodeUriPath($path);
         }
 
-        return $this->grantClientPrivateDownload($this->getRemoteObjectPath($path));
+        try {
+            $url = $this->getClient()->signUrl($this->bucket, $this->getRemoteObjectPath($path), $this->clientDownloadExpires);
+        } catch (OssException $exception) {
+            throw new VolumeException($exception->getMessage());
+        }
+
+        return $url;
     }
 
     /**
