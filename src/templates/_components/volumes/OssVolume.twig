@@ -68,7 +68,7 @@
     errors: volume.getErrors('endpoint'),
 }) }}
 
-{% if volume.useGlobalSettings %}
+{% if not allowAuthSettings or volume.useGlobalSettings %}
 
     {% set bucketOptions = [] %}
     {% for bucket in volume.allBuckets %}
@@ -108,18 +108,6 @@
     }) }}
 
 {% endif %}
-
-{{ forms.lightswitchField({
-    label: "Access Control"|t('aliyun'),
-    instructions: "This bucket is public space?"|t('aliyun'),
-    id: 'isPublic',
-    class: 'ltr',
-    name: 'isPublic',
-    value: 1,
-    on: volume.isPublic,
-    errors: volume.getErrors('isPublic'),
-    required: true
-}) }}
 
 {{ forms.autosuggestField({
     label: "Root Path"|t('aliyun'),
