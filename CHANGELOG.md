@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## Unreleased
 ### Updated
 ### Fixed
+- 修复创建新 OSS Volume 时因为缺少节点导致获取 Bucket 列表异常
 
 ## [0.1.6] - 2019-02-20
 ### Updated

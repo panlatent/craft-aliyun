@@ -43,7 +43,7 @@ class OssVolume extends Volume
     /**
      * @var string
      */
-    public $endpoint = '';
+    public $endpoint = 'oss-cn-beijing.aliyuncs.com';
 
     /**
      * @var string
