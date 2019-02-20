@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## Unreleased
 ### Updated
 ### Fixed
+- 修复 OSS Volume Object URL 生成错误
 
 ## [0.1.5] - 2019-02-20
 ### Updated
