@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+### Fixed
+
+## [0.1.6] - 2019-02-20
+### Updated
 - 支持 OSS Volume 从环境中获取 Bucket
 
 ### Fixed
