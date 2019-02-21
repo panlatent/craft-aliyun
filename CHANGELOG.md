@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+### Fixed
+
+## [0.1.7] - 2019-02-21
+### Updated
 - 为 OSS Volume 设置添加了已有 Bucket 的自动完成功能
 
 ### Fixed
