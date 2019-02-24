@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## Unreleased
 ### Updated
+- 移除了 OSS Volume 获取 Bucket 建议列表
+
 ### Fixed
+- 修复了未设置正确的插件AK、SK导致无法创建任何卷的问题
 
 ## [0.1.7] - 2019-02-21
 ### Updated

@@ -68,15 +68,6 @@
     errors: volume.getErrors('endpoint'),
 }) }}
 
-{% set bucketSuggestions = [] %}
-{% if not allowAuthSettings or volume.useGlobalSettings %}
-    {% for bucket in volume.allBuckets %}
-        {% set bucketSuggestions = bucketSuggestions|merge([{
-            name: bucket.name
-        }]) %}
-    {% endfor %}
-{% endif %}
-
 {{ forms.autosuggestField({
     label: "Bucket"|t('aliyun'),
     instructions: "Storage space name"|t('aliyun'),
@@ -87,10 +78,6 @@
     value: volume.bucket,
     errors: volume.getErrors('bucket'),
     suggestEnvVars: true,
-    suggestions: craft.cp.getEnvSuggestions()|merge([{
-        label: "Buckets"|t('aliyun'),
-        data: bucketSuggestions,
-    }]),
 }) }}
 
 {{ forms.autosuggestField({
