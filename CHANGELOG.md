@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [0.1.7.2] - 2019-08-21
+### Fixed
+- 修复了具有公开URL地址(CDN)的私有Bucket不能正确获取文件对象的问题
+
 ## [0.1.7.1] - 2019-02-24
 ### Updated
 - 移除了 OSS Volume 获取 Bucket 建议列表
