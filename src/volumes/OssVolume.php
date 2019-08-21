@@ -294,16 +294,8 @@ class OssVolume extends Volume
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        if ($this->hasUrls) {
-            $url = $this->getRemoteObjectUrl($uriPath);
-
-            if (!copy($url, $targetPath)) {
-                throw new VolumeException("Save asset {$url} to {$targetPath} failed");
-            }
-        } else {
-            $data = $this->getClient()->getObject($this->getBucket(), $this->getRemoteObjectPath($uriPath));
-            file_put_contents($targetPath, $data);
-        }
+        $data = $this->getClient()->getObject($this->getBucket(), $this->getRemoteObjectPath($uriPath));
+        file_put_contents($targetPath, $data);
 
         return filesize($targetPath);
     }
