@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [0.1.8] - 2021-04-08
+### Updated
+- 提升 PHP 和 CraftCMS 最低版本要求: PHP(7.2.5) ,CraftCMS(3.6.0)
+
 ## [0.1.7.2] - 2019-08-21
 ### Fixed
 - 修复了具有公开URL地址(CDN)的私有Bucket不能正确获取文件对象的问题

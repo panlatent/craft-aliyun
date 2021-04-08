@@ -208,6 +208,22 @@ class OssVolume extends Volume
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri): ?int
+    {
+        return $this->getFileMetadata($uri)['size'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): ?int
+    {
+        return $this->getFileMetadata($uri)['timestamp'];
+    }
+
+    /**
      * @param string $path
      * @param resource $stream
      * @param array $config
@@ -238,9 +254,7 @@ class OssVolume extends Volume
      */
     public function fileExists(string $path): bool
     {
-        $result = $this->getClient()->doesObjectExist($this->getBucket(), $this->getRemoteObjectPath($path));
-
-        return $result;
+        return $this->getClient()->doesObjectExist($this->getBucket(), $this->getRemoteObjectPath($path));
     }
 
     /**

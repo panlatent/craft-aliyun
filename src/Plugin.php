@@ -43,7 +43,7 @@ class Plugin extends \craft\base\Plugin
      *
      * @var string
      */
-    public $schemaVersion = '0.1.7.2';
+    public $schemaVersion = '0.1.8';
 
     /**
      * @var string
@@ -54,15 +54,7 @@ class Plugin extends \craft\base\Plugin
     // =========================================================================
 
     /**
-     * Set our $plugin static property to this class so that it can be accessed via
-     * Aliyun::$plugin
-     *
-     * Called after the plugin class is instantiated; do any one-time initialization
-     * here such as hooks and events.
-     *
-     * If you have a '/vendor/autoload.php' file, it will be loaded for you automatically;
-     * you do not need to load it in your init() method.
-     *
+     * @inheritdoc
      */
     public function init()
     {
@@ -71,19 +63,15 @@ class Plugin extends \craft\base\Plugin
 
         Craft::setAlias('@aliyun', $this->getBasePath());
 
-        // Register volume types
-        Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $e) {
-            $e->types[] = OssVolume::class;
-        });
+        $this->_registerVolumes();
+    }
 
-        Craft::info(
-            Craft::t(
-                'aliyun',
-                '{name} plugin loaded',
-                ['name' => $this->name]
-            ),
-            __METHOD__
-        );
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse()
+    {
+        return Craft::$app->getResponse()->refresh('aliyun/settings');
     }
 
     // Protected Methods
@@ -97,13 +85,16 @@ class Plugin extends \craft\base\Plugin
         return new Settings();
     }
 
+    // Private Methods
+    // =========================================================================
+
     /**
-     * @inheritdoc
+     * Register volume types.
      */
-    protected function settingsHtml()
+    private function _registerVolumes()
     {
-        return Craft::$app->getView()->renderTemplate('aliyun/_settings', [
-            'settings' => $this->getSettings(),
-        ]);
+        Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $e) {
+            $e->types[] = OssVolume::class;
+        });
     }
 }
