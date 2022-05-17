@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [0.1.8.1] - 2022-05-17
+### Fixed
+- 修复插件设置页面无法载入的问题
+
 ## [0.1.8] - 2021-04-08
 ### Updated
 - 提升 PHP 和 CraftCMS 最低版本要求: PHP(7.2.5) ,CraftCMS(3.6.0)

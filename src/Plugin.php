@@ -43,7 +43,7 @@ class Plugin extends \craft\base\Plugin
      *
      * @var string
      */
-    public $schemaVersion = '0.1.8';
+    public $schemaVersion = '0.1.8.1';
 
     /**
      * @var string
@@ -66,14 +66,6 @@ class Plugin extends \craft\base\Plugin
         $this->_registerVolumes();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsResponse()
-    {
-        return Craft::$app->getResponse()->refresh('aliyun/settings');
-    }
-
     // Protected Methods
     // =========================================================================
 
@@ -83,6 +75,16 @@ class Plugin extends \craft\base\Plugin
     protected function createSettingsModel()
     {
         return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml()
+    {
+        return Craft::$app->getView()->renderTemplate('aliyun/_settings', [
+            'settings' => $this->getSettings(),
+        ]);
     }
 
     // Private Methods
