@@ -299,15 +299,7 @@ class OSS extends OSSAbstract
      */
     public function deleteDirectory(string $path): void
     {
-        $objectList = [];
-
-        $lists = $this->getFileList($path);
-        foreach ($lists as $value) {
-            $objectList[] = $this->resolveRemotePath($value['path']);
-        }
-        $objectList[] = $this->resolveRemotePath($path);
-
-        $this->getClient()->deleteObjects($this->getBucket(), $objectList);
+        $this->internalDeleteDirectory($this->getBucket(), $path);
     }
 
     /**

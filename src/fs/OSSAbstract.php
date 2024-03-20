@@ -15,6 +15,7 @@ use craft\models\FsListing;
 use OSS\OssClient;
 use panlatent\craft\aliyun\models\Credential;
 use panlatent\craft\aliyun\Plugin;
+use yii\helpers\ArrayHelper;
 
 /**
  *
@@ -106,6 +107,17 @@ abstract class OSSAbstract extends Fs
     {
         $this->getClient()->copyObject($bucket, $path, $bucket, $newPath);
         $this->getClient()->deleteObject($bucket, $path);
+    }
+
+    protected function internalDeleteDirectory(string $bucket, string $path): void
+    {
+        $paths = [$path];
+        $objects = iterator_to_array($this->getObjectList($bucket, $path));
+        if (!empty($objects)) {
+            $paths = array_merge($paths,ArrayHelper::getColumn($objects, 'path'));
+        }
+
+        $this->getClient()->deleteObjects($bucket, $paths);
     }
 
     protected function internalRenameDirectory(string $bucket, string $path, string $newPath): void
