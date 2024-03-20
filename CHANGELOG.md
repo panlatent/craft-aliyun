@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Credential manager
 - OSS Filesystem Type
 
+### Deprecated
+- Craft 3 is not supported
+
 ### Removed
 - OSS Volume type
 
