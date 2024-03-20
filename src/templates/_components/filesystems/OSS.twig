@@ -1,0 +1,113 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.checkboxField({
+    label: "Use custom credential"|t('aliyun'),
+    instructions: 'Use custom credential AccessKey ID and AccessKey Secret'|t('aliyun'),
+    id: 'isCustomCredential',
+    name: 'isCustomCredential',
+    checked: fs.isCustomCredential,
+    errors: fs.getErrors('isCustomCredential'),
+    toggle: 'custom-credential',
+    reverseToggle: 'credential'
+}) }}
+
+<div id="credential" class="nested-fields{% if fs.isCustomCredential %} hidden{% endif %}">
+    {% set credentialOptions = [{label: "Select a credential"|t, value: ''}] %}
+    {% for credential in craft.aliyun.credentials.getAllCredentials() %}
+        {% set credentialOptions = credentialOptions|merge([{
+            label: credential.name,
+            value: credential.uid,
+        }]) %}
+    {% endfor %}
+
+    {{ forms.selectField({
+        label: 'Credential'|t('aliyun'),
+        required: true,
+        id: 'credential',
+        name: 'credential',
+        value: fs.credential,
+        options: credentialOptions,
+        errors: fs.getErrors('credential'),
+    }) }}
+</div>
+
+<div id="custom-credential" class="nested-fields{% if not fs.isCustomCredential %} hidden{% endif %}">
+
+    {{ forms.autosuggestField({
+        label: "AccessKey ID"|t('aliyun'),
+        instructions: "Please enter a access key for your Aliyun account"|t('aliyun'),
+        id: 'accessKeyId',
+        class: 'ltr',
+        name: 'accessKeyId',
+        value: fs.accessKeyId,
+        errors: fs.getErrors('accessKeyId'),
+        required: true,
+        placeholder: "AccessKey ID"|t('aliyun'),
+        suggestEnvVars: true,
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: "AccessKey Secret"|t('aliyun'),
+        instructions: "Please enter a secret key for your Aliyun account"|t('aliyun'),
+        id: 'accessKeySecret',
+        class: 'ltr',
+        name: 'accessKeySecret',
+        value: fs.accessKeySecret,
+        errors: fs.getErrors('accessKeySecret'),
+        required: true,
+        placeholder: "AccessKey Secret"|t('aliyun'),
+        suggestEnvVars: true,
+    }) }}
+
+</div>
+
+{% set endpointOptions = [] %}
+{% for endpoint in fs.endpoints %}
+    {% set endpointOptions = endpointOptions|merge([
+        {
+            label: endpoint.name ~  ' [' ~ 'Public Network'|t('aliyun') ~ ']',
+            value: endpoint.public
+        },
+        {
+            label: endpoint.name ~  ' [' ~ 'Internal Network'|t('aliyun') ~ ']',
+            value: endpoint.internal
+        }
+    ]) %}
+{% endfor %}
+
+{{ forms.selectizeField({
+    label: "Endpoint"|t('aliyun'),
+    instructions: "The storage space endpoint"|t('aliyun'),
+    required: true,
+    id: 'endpoint',
+    class: 'ltr endpoint',
+    name: 'endpoint',
+    options: endpointOptions,
+    includeEnvVars: true,
+    value: fs.endpoint,
+    errors: fs.getErrors('endpoint'),
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Bucket"|t('aliyun'),
+    instructions: "Storage space name"|t('aliyun'),
+    required: true,
+    id: 'bucket',
+    class: 'ltr',
+    name: 'bucket',
+    value: fs.bucket,
+    errors: fs.getErrors('bucket'),
+    suggestEnvVars: true,
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Root Path"|t('aliyun'),
+    instructions: "The volume file will be saved to the subdirectory of this Bucket"|t('aliyun'),
+    id: 'root',
+    class: 'ltr',
+    name: 'root',
+    value: fs.root,
+    errors: fs.getErrors('root'),
+    placeholder: "path/to/folder"|t('aliyun'),
+    suggestEnvVars: true,
+}) }}

@@ -8,9 +8,14 @@ namespace panlatent\craft\aliyun;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use craft\services\Volumes;
+use craft\events\RegisterUrlRulesEvent;
+use craft\services\Fs;
+use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
+use panlatent\craft\aliyun\fs\OSS;
 use panlatent\craft\aliyun\models\Settings;
-use panlatent\craft\aliyun\volumes\OssVolume;
+use panlatent\craft\aliyun\services\Credentials;
+use panlatent\craft\aliyun\web\twig\CraftVariableBehavior;
 use yii\base\Event;
 
 /**
@@ -24,6 +29,11 @@ use yii\base\Event;
  */
 class Plugin extends \craft\base\Plugin
 {
+    // Traits
+    // =========================================================================
+
+    use Services;
+
     // Static Properties
     // =========================================================================
 
@@ -33,22 +43,20 @@ class Plugin extends \craft\base\Plugin
      *
      * @var Plugin
      */
-    public static $plugin;
+    public static Plugin $plugin;
 
     // Public Properties
     // =========================================================================
 
     /**
-     * To execute your plugin’s migrations, you’ll need to increase its schema version.
-     *
-     * @var string
+     * @inheritdoc
      */
-    public $schemaVersion = '0.1.8.1';
+    public string $schemaVersion = '1.0';
 
     /**
-     * @var string
+     * @inheritdoc
      */
-    public $t9nCategory = 'aliyun';
+    public ?string $t9nCategory = 'aliyun';
 
     // Public Methods
     // =========================================================================
@@ -63,7 +71,16 @@ class Plugin extends \craft\base\Plugin
 
         Craft::setAlias('@aliyun', $this->getBasePath());
 
-        $this->_registerVolumes();
+        $this->_setServices();
+        $this->_registerFs();
+        $this->_registerProjectConfig();
+        $this->_registerCpRoutes();
+        $this->_registerVariables();
+    }
+
+    public function getSettingsResponse(): mixed
+    {
+        return Craft::$app->getResponse()->redirect('aliyun/settings/general');
     }
 
     // Protected Methods
@@ -72,31 +89,48 @@ class Plugin extends \craft\base\Plugin
     /**
      * @inheritdoc
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?\craft\base\Model
     {
         return new Settings();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml()
-    {
-        return Craft::$app->getView()->renderTemplate('aliyun/_settings', [
-            'settings' => $this->getSettings(),
-        ]);
     }
 
     // Private Methods
     // =========================================================================
 
     /**
-     * Register volume types.
+     * Register filesystem types.
      */
-    private function _registerVolumes()
+    private function _registerFs(): void
     {
-        Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $e) {
-            $e->types[] = OssVolume::class;
+        Event::on(Fs::class, Fs::EVENT_REGISTER_FILESYSTEM_TYPES, function (RegisterComponentTypesEvent $e) {
+            $e->types[] = OSS::class;
+        });
+    }
+
+    private function _registerProjectConfig(): void
+    {
+        Craft::$app->getProjectConfig()
+            ->onAdd('aliyun.credentials.{uid}', [$this->getCredentials(), 'handleChangeCredential'])
+            ->onUpdate('aliyun.credentials.{uid}', [$this->getCredentials(), 'handleChangeCredential'])
+            ->onRemove('aliyun.credentials.{uid}', [$this->getCredentials(), 'handleDeleteCredential']);
+    }
+
+    private function _registerCpRoutes(): void
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
+            $event->rules = array_merge($event->rules, [
+                'aliyun/settings/credentials/new' => 'aliyun/credentials/edit-credential',
+                'aliyun/settings/credentials/<credentialId:\d+>' => 'aliyun/credentials/edit-credential',
+            ]);
+        });
+    }
+
+    private function _registerVariables(): void
+    {
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function(Event $event) {
+            /** @var CraftVariable $variable */
+            $variable = $event->sender;
+            $variable->attachBehavior('aliyun', CraftVariableBehavior::class);
         });
     }
 }

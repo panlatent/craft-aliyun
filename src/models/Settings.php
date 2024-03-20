@@ -1,13 +1,13 @@
 <?php
-/**
+/*
  * @link https://github.com/panlatent/craft-aliyun
- * @copyright Copyright (c) 2018 panlatent@gmail.com
+ * @copyright Copyright (c) 2024 panlatent@gmail.com
  */
 
 namespace panlatent\craft\aliyun\models;
 
 use Craft;
-use yii\base\Model;
+use craft\base\Model;
 
 /**
  * Class Settings
@@ -17,34 +17,5 @@ use yii\base\Model;
  */
 class Settings extends Model
 {
-    /**
-     * @var string|null
-     */
-    public $accessKey;
 
-    /**
-     * @var string|null
-     */
-    public $secretKey;
-
-    /**
-     * @var bool Allow volume set accessKey and secretKey
-     */
-    public $allowVolumeAuthSettings = false;
-
-    /**
-     * @return string
-     */
-    public function getAccessKey()
-    {
-        return Craft::parseEnv($this->accessKey);
-    }
-
-    /**
-     * @return string
-     */
-    public function getSecretKey()
-    {
-        return Craft::parseEnv($this->secretKey);
-    }
 }

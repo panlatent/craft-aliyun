@@ -18,7 +18,7 @@
  */
 return [
     'Aliyun plugin loaded' => '阿里云插件已加载完毕',
-    'Aliyun OSS Volume' => '阿里云对象存储卷',
+    'Aliyun OSS' => 'OSS',
     'Access Key' => 'Access Key',
     'Secret Key' => 'Secret Key',
     'Allow Volume Auth Settings' => '允许卷设置认证方式',
@@ -36,8 +36,16 @@ return [
     'This bucket is public space?' => '这个是一个公开访问的存储空间？',
     'The volume file will be saved to the subdirectory of this Bucket' => '这个卷文件将保存在该路径下, 需要与公开卷 URL 路径对应',
     'Use environment variables storage {Access Key} and {Secret Key}' => '使用环境变量存储 {Access Key} 和 {Secret Key}',
-    'Use Global Settings' => '使用全局设置',
-    'Use global plugin settings. This requires you to set the plugin settings' => '使用全局的插件设置，这需要你配置插件设置',
+    'Use custom credential' => '使用自定义凭据',
+    'Use custom credential AccessKey ID and AccessKey Secret' => '使用自定义 AccessKey ID 和 AccessKey Secret作为凭据',
     'Endpoint List' => '节点列表',
-    'Internal' => '内网',
+    'Public Network' => '外网',
+    'Internal Network' => '内网',
+    'Aliyun Settings' => '阿里云设置',
+    'General' => '常规',
+    'Credentials' => '凭据',
+    'Credential' => '凭据',
+    'New credential' => '新建凭据',
+    'No credentials exist yet.' => '还没有凭据',
+    'New a credential' => '新凭据',
 ];

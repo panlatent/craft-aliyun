@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [1.0] - 2024-03-19
+### Added 
+- Support Craft 4
+- Credential manager
+- OSS Filesystem Type
+
+### Removed
+- OSS Volume type
+
 ## [0.1.8.1] - 2022-05-17
 ### Fixed
 - 修复插件设置页面无法载入的问题

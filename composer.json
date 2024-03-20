@@ -1,8 +1,8 @@
 {
     "name": "panlatent/craft-aliyun",
-    "description": "Aliyun plugin for Craft 3",
+    "description": "Aliyun plugin for Craft",
     "type": "craft-plugin",
-    "version": "0.1.8.1",
+    "version": "1.0",
     "keywords": [
         "craft",
         "cms",
@@ -23,10 +23,10 @@
         }
     ],
     "require": {
-        "php": ">=7.2.5",
-        "craftcms/cms": "^3.6.0",
-        "aliyuncs/oss-sdk-php": "^2.3",
-        "alibabacloud/client": "^1.3"
+        "php": ">=8.1",
+        "craftcms/cms": "^4.0",
+        "aliyuncs/oss-sdk-php": "^2.7",
+        "alibabacloud/client": "^1.5"
     },
     "autoload": {
         "psr-4": {
@@ -37,8 +37,14 @@
         "name": "Aliyun",
         "handle": "aliyun",
         "hasCpSettings": true,
-        "hasCpSection": true,
+        "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/panlatent/craft-aliyun/master/CHANGELOG.md",
         "class": "panlatent\\craft\\aliyun\\Plugin"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
     }
 }

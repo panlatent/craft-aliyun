@@ -1,4 +1,4 @@
-Aliyun plugin for Craft 3
+Aliyun plugin for Craft
 ==========================
 [![Build Status](https://travis-ci.org/panlatent/craft-aliyun.svg)](https://travis-ci.org/panlatent/craft-aliyun)
 [![Coverage Status](https://coveralls.io/repos/github/panlatent/craft-aliyun/badge.svg?branch=master)](https://coveralls.io/github/panlatent/craft-aliyun?branch=master)
@@ -11,17 +11,17 @@ Aliyun plugin for Craft 3
 
 ![Screenshot](resources/img/aliyun.png)
 
-Aliyun plugin for Craft CMS 3. The plugin provide a `Aliyun OSS Volume` can save files in the [Aliyun OSS](https://www.aliyun.com/product/oss).
+Aliyun plugin for Craft CMS. Provide some facilities to help you develop on the Aliyun(Alibaba Cloud) platform.
 
 Features
 ---------
 
-+ Aliyun OSS Volume
++ Aliyun OSS FileSystem
 
 Requirements
 ------------
 
-This plugin requires Craft CMS 3.0 or later.
+This plugin requires Craft CMS 3 or later.
 
 Installation
 ------------
@@ -41,14 +41,4 @@ To install the plugin, follow these instructions.
 Configuration
 -------------
 
-1. New a volume and set volume type: `Aliyun OSS Volume`
 
-2. Set `Access Key` and `Secret Key`
-
-3. Set `bucket` and the volume's `public URLs`, the value is URL from `bucket` bound URLs.
-
-FAQ
----
-
-A: 如何同步OSS中已存在（或通过其他途径添加的）资源？
-Q：通过 CP -> 实用工具 -> 资源索引
