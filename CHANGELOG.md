@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [1.0.1] - 2024-05-08
+### Fixed
+- Fixed root url error with oss root config
+
 ## [1.0] - 2024-03-19
 ### Added 
 - Support Craft 4

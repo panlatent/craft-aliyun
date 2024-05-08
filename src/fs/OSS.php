@@ -113,6 +113,16 @@ class OSS extends OSSAbstract
         ]);
     }
 
+    public function getRootUrl(): ?string
+    {
+        $url = parent::getRootUrl();
+        if ($url === null) {
+            return null;
+        }
+        $root = $this->getRoot();
+        return $root ? "$url$root/" : $url;
+    }
+
     /**
      * @return string
      */
