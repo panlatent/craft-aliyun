@@ -241,7 +241,7 @@ class OSS extends OSSAbstract
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath): void
+    public function renameFile(string $path, string $newPath, array $config = []): void
     {
         try {
             $this->internalRenameFile($this->getBucket(), $this->resolveRemotePath($path), $this->resolveRemotePath($newPath));
