@@ -2,7 +2,6 @@
     "name": "panlatent/craft-aliyun",
     "description": "Aliyun plugin for Craft",
     "type": "craft-plugin",
-    "version": "1.0",
     "keywords": [
         "craft",
         "cms",
