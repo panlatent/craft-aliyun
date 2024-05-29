@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [1.0.2] - 2024-05-29
+### Updated
+- Support Craft CMS 5
+
 ## [1.0.1] - 2024-05-08
 ### Fixed
 - Fixed root url error with oss root config

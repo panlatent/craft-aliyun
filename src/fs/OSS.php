@@ -253,7 +253,7 @@ class OSS extends OSSAbstract
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath): void
+    public function copyFile(string $path, string $newPath, $config = []): void
     {
         try {
             $this->getClient()->copyObject(
