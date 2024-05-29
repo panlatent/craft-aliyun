@@ -16,6 +16,7 @@ Aliyun plugin for Craft CMS. Provide some facilities to help you develop on the 
 Features
 ---------
 
++ Flexible credential management
 + Aliyun OSS FileSystem
 
 Requirements
