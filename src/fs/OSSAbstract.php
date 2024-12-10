@@ -9,16 +9,17 @@ namespace panlatent\craft\aliyun\fs;
 use Craft;
 use craft\base\Fs;
 use craft\errors\FsException;
-use craft\helpers\App;
 use craft\helpers\StringHelper;
-use craft\models\FsListing;
+use Generator;
 use OSS\OssClient;
 use panlatent\craft\aliyun\models\Credential;
-use panlatent\craft\aliyun\Plugin;
+use Throwable;
 use yii\helpers\ArrayHelper;
 
 /**
- *
+ * @property-read array $allBuckets
+ * @property-read Credential $credential
+ * @property-read OssClient $client
  */
 abstract class OSSAbstract extends Fs
 {
@@ -40,12 +41,14 @@ abstract class OSSAbstract extends Fs
 
     abstract public function getCredential(): Credential;
 
+    abstract public function getUseSsl(): bool;
+
     /**
      * @return array
      */
     public function getAllBuckets(): array
     {
-        return $this->getClient()->listBuckets()->getBucketList();
+        return $this->getClient()->listBuckets()?->getBucketList() ?? [];
     }
 
     /**
@@ -58,7 +61,8 @@ abstract class OSSAbstract extends Fs
             try {
                 $credential = $this->getCredential();
                 $this->_client = new OssClient($credential->getAccessKeyId(), $credential->getAccessKeySecret(), $this->getEndpoint());
-            } catch (\Throwable $exception) {
+                $this->_client->setUseSSL($this->getUseSsl());
+            } catch (Throwable $exception) {
                 Craft::error("Aliyun Oss client not created: {$exception->getMessage()}");
                 throw new FsException($exception->getMessage());
             }
@@ -66,7 +70,7 @@ abstract class OSSAbstract extends Fs
         return $this->_client;
     }
 
-    protected function getObjectList(string $bucket, string $prefix, bool $recursive = true): \Generator
+    protected function getObjectList(string $bucket, string $prefix, bool $recursive = true): Generator
     {
         for ($nextMarker = null; $nextMarker !== '';) {
             $listInfo = $this->getClient()->listObjects($bucket, [
@@ -75,6 +79,9 @@ abstract class OSSAbstract extends Fs
                 'max-keys' => 1000,
                 'marker' => $nextMarker ?? '',
             ]);
+            if (!$listInfo) {
+                continue;
+            }
 
             foreach ($listInfo->getObjectList() as $object) {
                 if (($object->getSize() === 0) && ($object->getKey() === $prefix)) {
@@ -87,16 +94,16 @@ abstract class OSSAbstract extends Fs
                     'dateModified' => strtotime($object->getLastModified()),
                 ];
             }
-            foreach ($listInfo->getPrefixList() as $prefix) {
+            foreach ($listInfo->getPrefixList() as $childPrefix) {
                 yield [
-                    'path' => $prefix->getPrefix(),
+                    'path' => $childPrefix->getPrefix(),
                     'type' => 'dir',
                     'fileSize' => null,
                     'dateModified' => null,
                 ];
 
                 if ($recursive) {
-                    yield from $this->getObjectList($bucket, $prefix->getPrefix(), $recursive);
+                    yield from $this->getObjectList($bucket, $childPrefix->getPrefix(), $recursive);
                 }
             }
             $nextMarker = $listInfo->getNextMarker();

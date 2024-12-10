@@ -10,11 +10,14 @@ use Craft;
 use craft\errors\FsException;
 use craft\helpers\App;
 use craft\models\FsListing;
+use DateTimeInterface;
 use Generator;
 use OSS\Core\OssException;
+use OSS\OssClient;
 use panlatent\craft\aliyun\base\CredentialTrait;
 use panlatent\craft\aliyun\models\Credential;
 use panlatent\craft\aliyun\Plugin;
+use Throwable;
 use yii\helpers\StringHelper;
 
 /**
@@ -24,8 +27,8 @@ class OSS extends OSSAbstract
 {
     use CredentialTrait;
 
-    const HTTP_SCHEME = 'http://';
-    const HTTP_SECURE_SCHEME = 'https://';
+    private const HTTP_SCHEME = 'http://';
+    private const HTTP_SECURE_SCHEME = 'https://';
 
     // Static Methods
     // =========================================================================
@@ -43,7 +46,11 @@ class OSS extends OSSAbstract
      */
     public static function endpoints(): array
     {
-        return require_once dirname(__DIR__) . '/config/endpoints.php';
+        static $endpoints = null;
+        if ($endpoints === null) {
+            $endpoints = require dirname(__DIR__) . '/config/endpoints.php';
+        }
+        return $endpoints;
     }
 
     // Properties
@@ -85,6 +92,11 @@ class OSS extends OSSAbstract
      * @var bool
      */
     public bool $serverHttpsDownload = false;
+
+    /**
+     * @var bool
+     */
+    public bool $useSsl = false;
 
     // Public Methods
     // =========================================================================
@@ -157,6 +169,11 @@ class OSS extends OSSAbstract
             throw new FsException('No credential found with UID: ' . $this->credential);
         }
         return $credential;
+    }
+
+    public function getUseSsl(): bool
+    {
+        return App::parseBooleanEnv($this->useSsl);
     }
 
     public function getFileListArray(string $directory = '', bool $recursive = true): array
@@ -244,8 +261,10 @@ class OSS extends OSSAbstract
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
         try {
+            Craft::error($this->resolveRemotePath($path), __FILE__);
+            Craft::error($this->resolveRemotePath($newPath), __FILE__);
             $this->internalRenameFile($this->getBucket(), $this->resolveRemotePath($path), $this->resolveRemotePath($newPath));
-        } catch (OssException $exception) {
+        } catch (Throwable $exception) {
             throw new FsException($exception->getMessage());
         }
     }
@@ -318,6 +337,25 @@ class OSS extends OSSAbstract
     public function renameDirectory(string $path, string $newName): void
     {
         $this->internalRenameDirectory($this->getBucket(), $this->resolveRemotePath($path), $this->resolveRemotePath($newName));
+    }
+
+    /**
+     * Get a direct upload URL
+     *
+     * @param string $path
+     * @param DateTimeInterface|int $expiresAt
+     * @param array $options
+     * @return string
+     * @throws FsException
+     */
+    public function getDirectPutUrl(string $path, DateTimeInterface|int $expiresAt = 60, array $options = []): string
+    {
+        try {
+            $expiration = $expiresAt instanceof DateTimeInterface ? $expiresAt->getTimestamp() : time() + $expiresAt;
+            return $this->getClient()->generatePresignedUrl($this->getBucket(), $this->resolveRemotePath($path), $expiration, OssClient::OSS_HTTP_PUT, $options);
+        } catch (Throwable $exception) {
+            throw new FsException($exception->getMessage(), 0, $exception);
+        }
     }
 
     /**

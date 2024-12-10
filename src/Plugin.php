@@ -14,7 +14,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use panlatent\craft\aliyun\fs\OSS;
 use panlatent\craft\aliyun\models\Settings;
-use panlatent\craft\aliyun\services\Credentials;
+use panlatent\craft\aliyun\web\assets\uploader\UploaderAsset;
 use panlatent\craft\aliyun\web\twig\CraftVariableBehavior;
 use yii\base\Event;
 
@@ -76,6 +76,10 @@ class Plugin extends \craft\base\Plugin
         $this->_registerProjectConfig();
         $this->_registerCpRoutes();
         $this->_registerVariables();
+
+        if ($this->getSettings()->getOssDirectUpload() && Craft::$app->getRequest()->getIsCpRequest()) {
+            Craft::$app->getView()->registerAssetBundle(UploaderAsset::class);
+        }
     }
 
     public function getSettingsResponse(): mixed

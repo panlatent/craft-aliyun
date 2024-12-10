@@ -8,6 +8,7 @@ namespace panlatent\craft\aliyun\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\App;
 
 /**
  * Class Settings
@@ -17,5 +18,18 @@ use craft\base\Model;
  */
 class Settings extends Model
 {
+    /**
+     * @var bool
+     * @since 1.1.0
+     */
+    public bool $ossDirectUpload = false;
 
+    /**
+     * @return bool
+     * @since 1.1.0
+     */
+    public function getOssDirectUpload(): bool
+    {
+        return App::parseBooleanEnv($this->ossDirectUpload);
+    }
 }

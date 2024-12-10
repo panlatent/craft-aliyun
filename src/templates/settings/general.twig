@@ -1,7 +1,26 @@
 {% extends "aliyun/_layouts/settings" %}
 
+{% set fullPageForm = true %}
+{% set settings = craft.aliyun.settings %}
+
 {% import "_includes/forms" as forms %}
 
 {% block content %}
+    <div id="settings" class="schedule-settings">
+        <input type="hidden" name="action" value="plugins/save-plugin-settings">
+        <input type="hidden" name="pluginHandle" value="{{ craft.aliyun.handle }}">
 
+    {{ forms.booleanMenuField({
+        label: "OSS Direct Upload"|t('aliyun'),
+        instructions: "Enable OSS client direct upload"|t('aliyun'),
+        id: 'ossDirectUpload',
+        name: 'settings[ossDirectUpload]',
+        yesLabel: 'Client-Side'|t('aliyun'),
+        noLabel: 'Server-Side'|t('aliyun'),
+        value: settings.ossDirectUpload,
+        errors: settings.getErrors('ossDirectUpload'),
+        includeEnvVars: true,
+    }) }}
+
+    </div>
 {% endblock %}

@@ -1,49 +1,49 @@
 {
-    "name": "panlatent/craft-aliyun",
-    "description": "Aliyun plugin for Craft",
-    "type": "craft-plugin",
-    "keywords": [
-        "craft",
-        "cms",
-        "craftcms",
-        "craft-plugin",
-        "aliyun",
-        "oss"
-    ],
-    "support": {
-        "docs": "https://github.com/panlatent/craft-aliyun/blob/master/README.md",
-        "issues": "https://github.com/panlatent/craft-aliyun/issues"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "panlatent@gmail.com",
-            "homepage": "https://panlatent.com/"
-        }
-    ],
-    "require": {
-        "php": ">=8.1",
-        "craftcms/cms": "^4.0|^5.0",
-        "aliyuncs/oss-sdk-php": "^2.7",
-        "alibabacloud/client": "^1.5"
-    },
-    "autoload": {
-        "psr-4": {
-          "panlatent\\craft\\aliyun\\": "src/"
-        }
-    },
-    "extra": {
-        "name": "Aliyun",
-        "handle": "aliyun",
-        "hasCpSettings": true,
-        "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/panlatent/craft-aliyun/master/CHANGELOG.md",
-        "class": "panlatent\\craft\\aliyun\\Plugin"
-    },
-    "config": {
-        "allow-plugins": {
-            "yiisoft/yii2-composer": true,
-            "craftcms/plugin-installer": true
-        }
+  "name": "panlatent/craft-aliyun",
+  "description": "Aliyun plugin for Craft",
+  "type": "craft-plugin",
+  "keywords": [
+    "craft",
+    "cms",
+    "craftcms",
+    "craft-plugin",
+    "aliyun",
+    "oss"
+  ],
+  "support": {
+    "docs": "https://github.com/panlatent/craft-aliyun/blob/master/README.md",
+    "issues": "https://github.com/panlatent/craft-aliyun/issues"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "panlatent@gmail.com",
+      "homepage": "https://panlatent.com/"
     }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "craftcms/cms": "^4.0|^5.0",
+    "aliyuncs/oss-sdk-php": "^2.7",
+    "alibabacloud/client": "^1.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "panlatent\\craft\\aliyun\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "Aliyun",
+    "handle": "aliyun",
+    "hasCpSettings": true,
+    "hasCpSection": false,
+    "changelogUrl": "https://raw.githubusercontent.com/panlatent/craft-aliyun/master/CHANGELOG.md",
+    "class": "panlatent\\craft\\aliyun\\Plugin"
+  },
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
 }

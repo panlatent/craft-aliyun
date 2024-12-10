@@ -111,3 +111,15 @@
     placeholder: "path/to/folder"|t('aliyun'),
     suggestEnvVars: true,
 }) }}
+
+{{ forms.booleanMenuField({
+    label: "Use SSL"|t('aliyun'),
+    instructions: "Enable HTTPS/SSL"|t('aliyun'),
+    id: 'useSsl',
+    name: 'useSsl',
+    yesLabel: 'HTTPS'|t('aliyun'),
+    noLabel: 'HTTP'|t('aliyun'),
+    value: fs.useSsl,
+    errors: fs.getErrors('useSsl'),
+    includeEnvVars: true,
+}) }}
