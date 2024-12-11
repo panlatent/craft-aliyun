@@ -261,8 +261,6 @@ class OSS extends OSSAbstract
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
         try {
-            Craft::error($this->resolveRemotePath($path), __FILE__);
-            Craft::error($this->resolveRemotePath($newPath), __FILE__);
             $this->internalRenameFile($this->getBucket(), $this->resolveRemotePath($path), $this->resolveRemotePath($newPath));
         } catch (Throwable $exception) {
             throw new FsException($exception->getMessage());

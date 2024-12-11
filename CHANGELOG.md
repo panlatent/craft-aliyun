@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [1.1.2] - 2024-12-11
+
+### Fixed
+
+- Fix asset cannot upload when volume with sub path
+
 ## [1.1.1] - 2024-12-11
 
 ### Fixed
