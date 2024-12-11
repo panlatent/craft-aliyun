@@ -291,14 +291,10 @@ class OSS extends OSSAbstract
      */
     public function getFileStream(string $uriPath)
     {
-        if ($this->hasUrls) {
-            $stream = fopen($this->getRemoteObjectUrl($uriPath), 'r');
-        } else {
-            $stream = tmpfile();
-            $contents = $this->getClient()->getObject($this->getBucket(), $this->resolveRemotePath($uriPath));
-            fwrite($stream, $contents);
-            fseek($stream, 0);
-        }
+        $stream = tmpfile();
+        $contents = $this->getClient()->getObject($this->getBucket(), $this->resolveRemotePath($uriPath));
+        fwrite($stream, $contents);
+        fseek($stream, 0);
 
         if (!$stream) {
             throw new FsException('Could not open create the stream for “' . $uriPath . '”');
