@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Updated
 ### Fixed
 
+## [1.1.1] - 2024-12-11
+
+### Fixed
+
+- Fix cannot get file when public url with CORS limit
+
 ## [1.1.0] - 2024-12-10
 
 ### Added
